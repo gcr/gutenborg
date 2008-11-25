@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title></title>
+<meta name="generator" content="Bluefish 1.0.7">
+<meta name="author" content="Michael James Wilber">
+<meta name="date" content="2008-11-24T18:09:42-0700">
+<meta name="copyright" content="">
+<meta name="keywords" content="">
+<meta name="description" content="">
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+
+<script type="text/javascript" src="jquery-1.2.6.js"></script>
+<script type="text/javascript">
+
+
+$(document).ready(function(){
+	this.designMode = 'on';
+	$("body").append("Hello<br />");
+	$("body").append("<b>Hello there!</b> AAA");
+	
+	$(document).keypress(function(event) {
+		// Prevent typing in that space
+		// Compatability: Fx2: TODO; Fx3: Perfect; Ie6: TODO; Ie7: TODO; Op9: TODO; Ch: TODO
+		
+		// TODO: Fix this working with nested elements
+		// BUG: This function fails if you right-click and choose "Paste".
+		if ($(window.getSelection().anchorNode).parent().is(".notype") && event.charCode != 0) {
+			// TODO: Instead of preventing tying, just split the chunks up.
+			event.preventDefault();
+			
+		}
+		//alert($(window.getSelection().anchorNode).parent().html());
+	});	
+
+});
+
+</script>
+</head>
+<body>
+Testing
+<span style="border: solid 1px black; background-color: #ff8888;" class="notype">Typing in this space is not allowed (but deleting stuff here is)!</span>
+Testing
+<div id="console">---</div>
+</body>
+</html>
