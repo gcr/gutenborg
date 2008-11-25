@@ -1,0 +1,8 @@
+/* Style sheet
+*
+* Released under the GNU GPL v2
+*/
+h2 {
+    text-align: center;
+    font-family: Sans, Arial; 
+}
