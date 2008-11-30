@@ -1,15 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<title>Gobby test</title>
+<title>Gutenborg test</title>
 <meta name="generator" content="Bluefish 1.0.7">
 <meta name="author" content="Michael James Wilber">
-<meta name="date" content="2008-11-24T22:03:12-0700">
+<meta name="date" content="2008-11-26T22:41:47-0700">
 <meta name="copyright" content="">
 <meta name="keywords" content="">
 <meta name="description" content="">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+<link href="design.css" rel="stylesheet" type="text/css">
 
 <script type="text/javascript" src="jquery-1.2.6.js"></script>
 <script type="text/javascript" src="jquery.texteditor.js"></script>
@@ -18,15 +19,15 @@
 
 $(document).ready(function(){
 	
-    $(".gobby-document").document("server", 0, "michael");
+    $(".gutenborg-document").document("server", 0, "michael");
 	
 });
 
 </script>
 </head>
 <body>
-<h2>Editable Iframe Demo</h2>
-<iframe class="gobby-document" style="display: block; width: 500px; height: 500px; border: solid 1px #808080; margin-left: auto; margin-right: auto;"></iframe>
+<h2>Gutenborg - Editable Iframe Demo</h2>
+<iframe class="gutenborg-document" style="display: block; width: 500px; height: 500px; border: solid 1px #808080; margin-left: auto; margin-right: auto;"></iframe>
 
 </body>
 </html>
