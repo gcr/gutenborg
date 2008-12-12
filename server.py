@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #       server.py
 #       
 #       Copyright 2008 Michael James Wilber <michael@northbound>
@@ -18,12 +19,39 @@
 #       MA 02110-1301, USA.
 
 import cherrypy
+import json
 
-cherrypy.config.update('server.conf');
 class Root:
-	def index(self):
-		return "Hello, world!"
+	def __init__(self):
+		self.list = []
+	
+	def index(self, **args):
+		raise cherrypy.InternalRedirect("ajax.htm")
 	index.exposed = True
+	
+	def messages(self, **args):
+		cherrypy.response.headers['Content-Type'] = 'text/x-json'
+		//cherrypy.response.headers[''] = 'None'
+		return json.write({"items": self.list})
+	messages.exposed = True
+	
+	def new(self, **args):
+		if args.has_key('message'):
+			self.list.append(args['message']);
+	new.exposed = True
 
-# cherrypy.tree.mount(Root(), '/', 'server.conf');
-cherrypy.quickstart(Root(), '/', 'server.conf');
+cherrypy.config.update({
+'server.socket_port': 8000,
+'server.thread_pool': 1,
+'tools.sessions.on': True,
+'tools.staticdir.root': "/home/michael/Projects/collab"
+})
+
+conf = {'/': {
+'tools.staticdir.on': True,
+'tools.staticdir.dir': 'web',
+'response.stream' : True
+}}
+pageroot = Root()
+cherrypy.quickstart(pageroot, '/', conf)
+print repr(pageroot.list)
