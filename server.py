@@ -31,7 +31,7 @@ class Root:
 	
 	def messages(self, **args):
 		cherrypy.response.headers['Content-Type'] = 'text/x-json'
-		//cherrypy.response.headers[''] = 'None'
+		# cherrypy.response.headers[''] = 'None'
 		return json.write({"items": self.list})
 	messages.exposed = True
 	
