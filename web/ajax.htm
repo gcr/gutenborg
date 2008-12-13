@@ -4,7 +4,7 @@
 <title>Ajax test</title>
 <meta name="generator" content="Bluefish 1.0.7">
 <meta name="author" content="Michael James Wilber">
-<meta name="date" content="2008-12-11T17:58:23-0700">
+<meta name="date" content="2008-12-12T19:48:20-0700">
 <meta name="copyright" content="">
 <meta name="keywords" content="">
 <meta name="description" content="">
@@ -18,7 +18,10 @@
 
 $(document).ready(function(){
     
-    $.ajaxSetup({cache: false});
+    $.ajaxSetup({
+        cache: false,
+        async: true
+    });
 	
     $.getJSON("messages", function (data) {
         $.each(data.items, function(index, text) {
@@ -26,12 +29,23 @@ $(document).ready(function(){
         });
     });
     
+    function waitformessages() {
+    //console.log("Waiting for messages...")
+        $.getJSON("wait", function(data) {
+            $.each(data.items, function(index, text) {
+                $("<div class='response'></div>").appendTo(".responseholder").hide().text(text).fadeIn();
+            });
+            waitformessages();
+        });
+    }
+    waitformessages();
+    
     $("form").submit(function(event) {
+        //console.log("Submitting messages")
         event.preventDefault();
-        console.log("hello");
         value = $("#message").val();
-        $.get("new", {message: value});
-        $("<div class='response'></div>").appendTo(".responseholder").hide().text(value).show("normal");
+        $.get("new", {message: value}, function() {console.log("Message sent")});
+        //$("<div class='response'></div>").appendTo(".responseholder").hide().text(value).show("normal");
         $("#message").val("");
          
     });

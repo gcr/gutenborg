@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#       server.py
+#       server.py - Simple web server
 #       
 #       Copyright 2008 Michael James Wilber <michael@northbound>
 #       
@@ -20,29 +20,46 @@
 
 import cherrypy
 import json
+import Queue
 
 class Root:
 	def __init__(self):
 		self.list = []
+		self.queue = Queue.Queue(8)
 	
 	def index(self, **args):
 		raise cherrypy.InternalRedirect("ajax.htm")
 	index.exposed = True
 	
 	def messages(self, **args):
+		"""Gets a list of all the messages"""
 		cherrypy.response.headers['Content-Type'] = 'text/x-json'
 		# cherrypy.response.headers[''] = 'None'
 		return json.write({"items": self.list})
 	messages.exposed = True
 	
+	def wait(self, **args):
+		"""Waits for a new message"""
+		print "Wait method called"
+		cherrypy.response.headers['Content-Type'] = 'text/x-json'
+		def returnqueue():
+			value = self.queue.get()
+			self.queue.task_done()
+			yield json.write({"items": [value]})
+			print "Item returned"
+		return returnqueue()
+	wait.exposed = True
+	
 	def new(self, **args):
 		if args.has_key('message'):
-			self.list.append(args['message']);
+			self.list.append(args['message'])
+			self.queue.put(args['message'], False)
+			print "New message"
 	new.exposed = True
 
 cherrypy.config.update({
 'server.socket_port': 8000,
-'server.thread_pool': 1,
+'server.thread_pool': 10,
 'tools.sessions.on': True,
 'tools.staticdir.root': "/home/michael/Projects/collab"
 })
