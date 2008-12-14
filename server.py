@@ -43,10 +43,13 @@ class Root:
 		print "Wait method called"
 		cherrypy.response.headers['Content-Type'] = 'text/x-json'
 		def returnqueue():
-			value = self.queue.get()
-			self.queue.task_done()
-			yield json.write({"items": [value]})
-			print "Item returned"
+			try:
+				value = self.queue.get(True, 5)
+				self.queue.task_done()
+				yield json.write({"items": [value]})
+				#print "Item returned"
+			except Queue.Empty:
+				yield "{}"
 		return returnqueue()
 	wait.exposed = True
 	
