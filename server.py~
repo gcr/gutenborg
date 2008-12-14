@@ -22,55 +22,37 @@ import cherrypy
 import json
 import Queue
 
-from gutenborg import Gutenborg
-from user import User
-
 class Root:
 	def __init__(self):
-		self.gb = Gutenborg("Server name", "Server tagline")
-		
-		# Some server test things
-		self.u = User(self.gb, "Mike", "Blue")
-		self.me = User(self.gb, "Becca", "Red")
-		self.gb.add_user(self.u)
-		self.gb.add_user(self.me)
-	
-	def is_logged_in(self):
-		""" Returns true if you're logged in, false otherwise """
-		if 'user' in cherrypy.session:
-			return True
-		else:
-			return False
-	
-	def login(self, **args):
-		if 'name' in args and 'color' in args:
-			cherrypy.session['user'] = User(self.gb, args['name'], args['color'])
-			self.gb.add_user(cherrypy.session['user'])
-			return "User added"
-		else:
-			return "Bad request"
-	login.exposed = True
-	
-	def users(self, **args):
-		return self.gb.get_active_user_list()
+		self.list = []
 	
 	def index(self, **args):
-		cherrypy.session.acquire_lock()
-		assert self.is_logged_in(), "User is not logged in"
-		cherrypy.session.release_lock()
-		return "User name: " + cherrypy.session['user'].name
+		raise cherrypy.InternalRedirect("ajax.htm")
 	index.exposed = True
 	
+	def messages(self, **args):
+		"""Gets a list of all the messages"""
+		cherrypy.response.headers['Content-Type'] = 'text/x-json'
+		if args.has_key('since'):
+			return json.write({"items": self.list[int(args['since']):]})
+		else:
+			return json.write({"items": self.list})
+	messages.exposed = True
 	
+	def new(self, **args):
+		if args.has_key('message'):
+			self.list.append(args['message'])
+	new.exposed = True
 
+# Site-wide config
 cherrypy.config.update({
 'server.socket_port': 8000,
-'server.thread_pool': 32, # Max connected users
+'server.thread_pool': 10,
 'tools.sessions.on': True,
-'tools.sessions.locking': 'explicit',
 'tools.staticdir.root': "/home/michael/Projects/collab"
 })
 
+# App-wide config
 conf = {'/': {
 'tools.staticdir.on': True,
 'tools.staticdir.dir': 'web',
@@ -78,4 +60,4 @@ conf = {'/': {
 }}
 pageroot = Root()
 cherrypy.quickstart(pageroot, '/', conf)
-
+print repr(pageroot.list)

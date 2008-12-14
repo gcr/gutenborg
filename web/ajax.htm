@@ -4,7 +4,7 @@
 <title>Ajax test</title>
 <meta name="generator" content="Bluefish 1.0.7">
 <meta name="author" content="Michael James Wilber">
-<meta name="date" content="2008-12-13T17:22:59-0700">
+<meta name="date" content="2008-12-13T17:55:37-0700">
 <meta name="copyright" content="">
 <meta name="keywords" content="">
 <meta name="description" content="">
@@ -30,7 +30,6 @@ $(document).ready(function(){
     });
     
     function waitformessages() {
-    //console.log("Waiting for messages...")
         $.getJSON("wait", function(data) {
             // We got something!
             if (data.items) {
@@ -46,13 +45,10 @@ $(document).ready(function(){
     waitformessages();
     
     $("form").submit(function(event) {
-        //console.log("Submitting messages")
         event.preventDefault();
         value = $("#message").val();
-        $.get("new", {message: value}, function() {console.log("Message sent")});
-        //$("<div class='response'></div>").appendTo(".responseholder").hide().text(value).show("normal");
+        $.get("new", {message: value});
         $("#message").val("");
-         
     });
 	
 });
