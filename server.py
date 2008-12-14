@@ -95,9 +95,8 @@ class Root:
 		cherrypy.session.acquire_lock()
 		user = cherrypy.session['user']
 		cherrypy.session.release_lock()
-		events = user.get_events()
-		print events
-		return events
+		return user.get_events()
+		
 	wait.exposed = True
 	
 	def index(self, **args):
