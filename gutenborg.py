@@ -18,6 +18,7 @@
 #       MA 02110-1301, USA.
 
 from user import User
+import Queue
 
 class Gutenborg:
 	"""
@@ -37,6 +38,13 @@ class Gutenborg:
 		"""
 		# TODO: Add this to every user's queue
 		print "Event:", event
+		for u in self.active_users:
+			try:
+				u.add_event(event)
+				print "(Added to " + u.name + "'s queue)"
+			except Queue.Full:
+				print "User " + u.name + "'s queue full! Disconnected."
+				self.disconnect_user(u)
 		
 	def add_user(self, user):
 		"""

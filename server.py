@@ -43,6 +43,8 @@ class Root:
 			return False
 	
 	def login(self, **args):
+		# TODO: Actually, we gotta see if another user
+		# with the same name is logged in
 		cherrypy.session.acquire_lock()
 		if self.is_logged_in():
 			# Can't be logged in more than once
@@ -78,10 +80,25 @@ class Root:
 		return json.write(response)
 	info.exposed = True
 	
-	def index(self, **args):
+	def new(self, **args):
 		cherrypy.session.acquire_lock()
+		assert self.is_logged_in(), "User not logged in"
+		assert 'message' in args, "No message sent"
+		self.gb.send_event("User " + cherrypy.session['user'].name + " said: "
+			+ args['message'] + ".")
+		return "Message posted"
+	new.exposed = True
+	
+	def wait(self, **args):
 		assert self.is_logged_in(), "User is not logged in"
-		return "User name: " + cherrypy.session['user'].name
+		cherrypy.session.acquire_lock()
+		user = cherrypy.session['user']
+		cherrypy.session.release_lock()
+		return user.get_events()
+	wait.exposed = True
+	
+	def index(self, **args):
+		raise cherrypy.InternalRedirect("gb.htm")
 	index.exposed = True
 	
 	

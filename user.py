@@ -31,7 +31,7 @@ class User:
 		newname is the user's name.
 		newcolor is the user's color.
 		"""
-		self.queue = Queue.Queue(32)
+		self.queue = Queue.Queue(15)
 		self.name = newname
 		self.color = newcolor
 		self.gutenborg = newgutenborg
@@ -78,11 +78,7 @@ class User:
 		"""
 		Addse the event to the user's event queue.
 		"""
-		try:
-			self.queue.put(event, False)
-		except Queue.Full:
-			# We can't add anything else.
-			gutenborg.disconnect_user(self)
+		self.queue.put(event, False)
 	
 	def change_name(self, newname):
 		"""

@@ -1,17 +1,21 @@
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 <title>Ajax test</title>
+<meta name="generator" content="Bluefish 1.0.7">
 <meta name="author" content="Michael James Wilber">
+<meta name="date" content="2008-12-13T17:55:37-0700">
 <meta name="copyright" content="">
 <meta name="keywords" content="">
 <meta name="description" content="">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
 <link href="design.css" rel="stylesheet" type="text/css">
+
 <script type="text/javascript" src="jquery-1.2.6.js"></script>
-<script type="text/javascript" src="session.js"></script>
 <script type="text/javascript">
+
 
 $(document).ready(function(){
     
@@ -20,42 +24,48 @@ $(document).ready(function(){
         async: true
     });
 	
-	$("div").click(function() {
-		session.sendEvent("New Event!");
-	});
-	
-	/*
 	$.getJSON("info", function(data) {
-		$("h1").text(data['name']);
-		$("h2").text(data['tag']);
-		$("body").append("<ul class='active'></ul>");
+		// Get current server information
+		$(".sname").text(data['name']);
+		$(".stag").text(data['tag']);
 		$.each(data['active_users'], function(index, user){
-			$(".active").append("<li>User name: <span style='color: "
+			$(".users").append("<li><span style='color: "
 				+ user['color'] + ";'>" + user['name'] + "</span></li>");
 			});
 		if (data['myuser']) {
 			// User is logged in
-			$("body").append("My user: " + data['myuser'])
-			$("body").append("<form name='messageform' action='new'>"
-				+ "<input name='message' type='text' value='Message'>"
-				+ "<input name='submit' type='submit' value='Send'>"
-				+ "</form>");
+			window.location = "/"
 		} else {
 			// User is not logged in
-			$("body").append("<form name='loginform' action='login'>"
-				+ "<input name='name' type='text' value='User name'>"
-				+ "<input name='color' type='text' value='User color'>"
-				+ "<input name='submit' type='submit' value='Login'>"
-				+ "</form>");
 		}
-	});*/
+	});
+	$("form").submit(function(event) {
+		event.preventDefault();
+		
+	});
 	
 });
 
 </script>
 </head>
 <body>
-<h1>…</h1><h2>…</h2>
-<div>Click for a new event!</div>
+<h1 class='sname'>…</h1><h2 class='stag'>…</h2>
+<div class='loginform'><form name='Loginform' action='add_user'>
+<table>
+    <tr>
+        <td>User name:</td>
+        <td><input name='name' type='text' /></td>
+    </tr>
+    <tr>
+    	<td>Color:</td>
+    	<td><input name='color' type='text' /></td>
+    </tr>
+    <tr>
+    	<td colspan=2><input name='submit' type='submit' value='Log in'></td>
+    </tr>
+</table>
+</form></div>
+<div class='userlist'>Online users:
+<ul class='users'></ul></div>
 </body>
 </html>
