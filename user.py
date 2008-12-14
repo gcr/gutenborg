@@ -38,7 +38,15 @@ class User:
 	
 	def __str__(self):
 		return "User \n  Name: " + self.name + "\n  Color: " + self.color
-		
+	
+	def __eq__(self, u):
+		""" Returns true if one user is equal to another  (this only
+		depends on the username)"""
+		if self.name == u.name:
+			return True
+		else:
+			return False
+			
 	def get_events(self):
 		"""
 		Returns the events in the event queue or waits for a new one.

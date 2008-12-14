@@ -43,6 +43,11 @@ class Root:
 			return False
 	
 	def login(self, **args):
+		cherrypy.session.acquire_lock()
+		if self.is_logged_in():
+			# Can't be logged in more than once
+			return "User already logged in!"
+			
 		if 'name' in args and 'color' in args:
 			cherrypy.session['user'] = User(self.gb, args['name'], args['color'])
 			self.gb.add_user(cherrypy.session['user'])
@@ -51,13 +56,31 @@ class Root:
 			return "Bad request"
 	login.exposed = True
 	
-	def users(self, **args):
-		return self.gb.get_active_user_list()
+	def info(self, **args):
+		"""
+		Returns a JSON object containing lots of server information
+		"""
+		cherrypy.session.acquire_lock()
+		cherrypy.response.headers['Content-Type'] = 'text/json'
+		response = {}
+		response['name'] = self.gb.name
+		response['tag'] = self.gb.tagline
+		response['active_users'] = []
+		response['dead_users'] = []
+		for u in self.gb.active_users[:]:
+			response['active_users'].append({"name": u.name, "color": u.color})
+		for u in self.gb.dead_users[:]:
+			response['dead_users'].append({"name": u.name, "color": u.color})
+		
+		# Are we logged in?
+		if self.is_logged_in():
+			response['myuser'] = cherrypy.session['user'].name
+		return json.write(response)
+	info.exposed = True
 	
 	def index(self, **args):
 		cherrypy.session.acquire_lock()
 		assert self.is_logged_in(), "User is not logged in"
-		cherrypy.session.release_lock()
 		return "User name: " + cherrypy.session['user'].name
 	index.exposed = True
 	
