@@ -20,30 +20,51 @@
 // This script handles things like logging in, waiting for messages, etc.
 
 session = new Object();
+
 session.getServerInfo = function() {
-    $.getJSON("info", function(data) {
-        session.servername = data['name'];
-        session.servertag = data['tag'];
-        session.active_users = data['active_users'];
-        session.dead_users = data['dead_users'];
-        if (data['myuser']) {
-            // Are we logged in?
-            session.logged_in = true;
-            session.myname = data['myuser'];
-        } else {
-            // No we are not!
-            session.logged_in = false;
-            session.myname = '';
+    // Asks the server for information, stores it in the session object
+    
+    // This is an asynchronous request.
+    data = $.ajax({
+          url: "info",
+          async: false, // Magic here
+          cache: false,
+          dataType: 'json',
+          success: function(data) {
+            session.servername = data['name'];
+            session.servertag = data['tag'];
+            session.active_users = data['active_users'];
+            session.dead_users = data['dead_users'];
+            if (data['myuser']) {
+                // Are we logged in?
+                session.logged_in = true;
+                session.myname = data['myuser'];
+            } else {
+                // No we are not!
+                session.logged_in = false;
+                session.myname = '';
+            }
         }
-    })
+     });
+
+     
 }
-// Run that immediately.
-session.getServerInfo();
+
+session.init = function() {
+    // Starts up the session. Should be done again
+    // if we log in.
+    session.getServerInfo();
+    pagehandler.init();
+    session.waitForEvents();
+}
 
 session.handleEvent = function(event) {
-    console.log(event);
+    // When we get an event, this function describes what to do with it.
+    $("<div></div>").append("body");
 }
+
 session.waitForEvents = function() {
+    // Waits for events.
     if (session.logged_in) {
         $.getJSON("wait", function(response){
             $.each(response, function(i, event) {
@@ -53,7 +74,9 @@ session.waitForEvents = function() {
         });
     }
 }
+
 session.sendEvent = function(event) {
+    // Sends a new event to all users.
     if (session.logged_in) {
         $.getJSON("new", {message: event});
     }

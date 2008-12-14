@@ -8,8 +8,10 @@
 <meta name="description" content="">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+
 <link href="design.css" rel="stylesheet" type="text/css">
 <script type="text/javascript" src="jquery-1.2.6.js"></script>
+<script type="text/javascript" src="pagehandler.js"></script>
 <script type="text/javascript" src="session.js"></script>
 <script type="text/javascript">
 
@@ -24,38 +26,15 @@ $(document).ready(function(){
 		session.sendEvent("New Event!");
 	});
 	
-	/*
-	$.getJSON("info", function(data) {
-		$("h1").text(data['name']);
-		$("h2").text(data['tag']);
-		$("body").append("<ul class='active'></ul>");
-		$.each(data['active_users'], function(index, user){
-			$(".active").append("<li>User name: <span style='color: "
-				+ user['color'] + ";'>" + user['name'] + "</span></li>");
-			});
-		if (data['myuser']) {
-			// User is logged in
-			$("body").append("My user: " + data['myuser'])
-			$("body").append("<form name='messageform' action='new'>"
-				+ "<input name='message' type='text' value='Message'>"
-				+ "<input name='submit' type='submit' value='Send'>"
-				+ "</form>");
-		} else {
-			// User is not logged in
-			$("body").append("<form name='loginform' action='login'>"
-				+ "<input name='name' type='text' value='User name'>"
-				+ "<input name='color' type='text' value='User color'>"
-				+ "<input name='submit' type='submit' value='Login'>"
-				+ "</form>");
-		}
-	});*/
+	// Start the session
+	session.init();
+	
 	
 });
-
 </script>
 </head>
 <body>
-<h1>…</h1><h2>…</h2>
+<h1 class='sname'>…</h1><h2 class='stag'>…</h2>
 <div>Click for a new event!</div>
 </body>
 </html>

@@ -26,8 +26,8 @@ from gutenborg import Gutenborg
 from user import User
 
 class Root:
-	def __init__(self):
-		self.gb = Gutenborg("Server name", "Server tagline")
+	def __init__(self, name, tagline):
+		self.gb = Gutenborg(name, tagline)
 		
 		# Some server test things
 		self.u = User(self.gb, "Mike", "Blue")
@@ -116,6 +116,6 @@ conf = {'/': {
 'tools.staticdir.dir': 'web',
 'response.stream' : True
 }}
-pageroot = Root()
+pageroot = Root("Dev server", "Caution: May Explode")
 cherrypy.quickstart(pageroot, '/', conf)
 

@@ -36,7 +36,6 @@ class Gutenborg:
 		"""
 		Sends an event to every active user
 		"""
-		# TODO: Add this to every user's queue
 		print "Event:", event
 		for u in self.active_users:
 			try:
