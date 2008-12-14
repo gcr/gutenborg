@@ -60,11 +60,11 @@ session.init = function() {
 
 session.handleEvent = function(event) {
     // When we get an event, this function describes what to do with it.
-    $("<div></div>").append("body");
+    $("<div class='response'></div>").appendTo(".responseholder").hide().text(event).fadeIn();
 }
 
 session.waitForEvents = function() {
-    // Waits for events.
+    // Waits for events. Uses AJAX long polling.
     if (session.logged_in) {
         $.getJSON("wait", function(response){
             $.each(response, function(i, event) {

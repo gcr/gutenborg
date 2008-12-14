@@ -50,7 +50,8 @@ class Gutenborg:
 		Creates a new user and adds him to the active user list.
 		"""
 		if user in self.active_users:
-			# User is already logged in, do nothing
+			# User is already logged in, do nothing.
+			# TODO: User needs to know this!
 			pass
 		elif user in self.dead_users:
 			# User is in the dead list. Put him on the active list.

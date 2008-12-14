@@ -44,7 +44,8 @@ class Root:
 	
 	def login(self, **args):
 		# TODO: Actually, we gotta see if another user
-		# with the same name is logged in
+		# with the same name but a different computer
+		# is logged in. This functionality is already in the gutenborg class.
 		cherrypy.session.acquire_lock()
 		if self.is_logged_in():
 			# Can't be logged in more than once
@@ -94,7 +95,9 @@ class Root:
 		cherrypy.session.acquire_lock()
 		user = cherrypy.session['user']
 		cherrypy.session.release_lock()
-		return user.get_events()
+		events = user.get_events()
+		print events
+		return events
 	wait.exposed = True
 	
 	def index(self, **args):

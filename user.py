@@ -64,15 +64,16 @@ class User:
 				self.queue.task_done()
 				return json.write([value])
 			except Queue.Empty:
-				# We didn't get anything in ten seconds
-				return "{}"
+				# We didn't get anything in ten seconds, return
+				# an empty list.
+				return json.write([])
 		else:
 			# The queue is NOT empty. Return everything and
 			# then stop.
 			values = []
 			while not self.queue.empty():
 				values.append(self.queue.get(False))
-			return json.write({"items": values})
+			return json.write(values)
 	
 	def add_event(self, event):
 		"""
