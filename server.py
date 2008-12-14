@@ -43,13 +43,28 @@ class Root:
 		print "Wait method called"
 		cherrypy.response.headers['Content-Type'] = 'text/x-json'
 		def returnqueue():
-			try:
-				value = self.queue.get(True, 5)
-				self.queue.task_done()
-				yield json.write({"items": [value]})
-				#print "Item returned"
-			except Queue.Empty:
-				yield "{}"
+			"""This function returns all the new messages.
+			If the queue isn't empty, return all the queue objects
+			and immediately stop.
+			If the queue *is* empty, wait until something interesting
+			happens."""
+			if (self.queue.empty()):
+				try:
+					# Wait for 10 seconds
+					value = self.queue.get(True, 10)
+					self.queue.task_done()
+					return json.write({"items": [value]})
+				except Queue.Empty:
+					# We didn't get anything in ten seconds
+					return "{}"
+			else:
+				# The queue is NOT empty. Return everything and
+				# then stop.
+				values = []
+				while not self.queue.empty():
+					values.append(self.queue.get(False))
+				return json.write({"items": values})
+				
 		return returnqueue()
 	wait.exposed = True
 	
@@ -62,7 +77,7 @@ class Root:
 
 cherrypy.config.update({
 'server.socket_port': 8000,
-'server.thread_pool': 10,
+'server.thread_pool': 32, # Max connected users
 'tools.sessions.on': True,
 'tools.sessions.locking': 'explicit',
 'tools.staticdir.root': "/home/michael/Projects/collab"
