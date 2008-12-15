@@ -45,7 +45,7 @@ class Gutenborg:
 		"""
 		if user in self.active_users:
 			# User is already logged in, do nothing.
-			raise NameError, "User already exists"
+			raise NameError, "User already exists in active user list"
 		elif user in self.dead_users:
 			# User is in the dead list. Remove him from the dead list
 			# and add him to the active list.
@@ -70,3 +70,13 @@ class Gutenborg:
 		# itself triggered the disconnect.
 		self.send_event("** User disappeared: "+ str(user))
 		
+	def timeout_users(self, gracetime):
+		"""
+		This function times out all users who haven't asked for any
+		events recently. We'll presume them dead.
+		"""
+		print "Timing out users"
+		for u in self.active_users:
+			u.try_timeout(gracetime)
+			
+	

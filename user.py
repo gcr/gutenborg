@@ -19,6 +19,7 @@
 
 import Queue
 import json
+import time
 
 class User:
 	"""Represents a Gutenborg user"""
@@ -35,6 +36,7 @@ class User:
 		self.name = newname
 		self.color = newcolor
 		self.gutenborg = newgutenborg
+		self.lastime = time.time()
 	
 	def __str__(self):
 		return "<(User) Name: " + self.name + ", Color: " + self.color + ">"
@@ -82,8 +84,9 @@ class User:
 		try:
 			self.queue.put(event, False)
 		except Queue.Full:
-			# Uh oh! Are we full? Oh dear!
-			self.disconnect_user(self)
+			# Uh oh! Are we full? Oh dear! Better commit suicide!
+			self.gutenborg.disconnect_user(self)
+			self.gutenborg.send_event("** " + user.name + "'s queue overflowed! Presumed dead.")
 	
 	def change_name(self, newname):
 		"""
@@ -98,3 +101,17 @@ class User:
 		"""
 		self.color = newcolor
 		self.gutenborg.send_event("User " + self.name + " changed his color")
+	
+	def touch_time(self):
+		"""
+		Touches the last time
+		"""
+		self.lastime = time.time()
+	
+	def try_timeout(self, gracetime=60):
+		now = time.time()
+		if (now - self.lastime >= gracetime):
+			# Was the last update more than gracetime time ago?
+			# Commit suicide
+			self.gutenborg.disconnect_user(self)
+			self.gutenborg.send_event("** " + self.name + " hasn't gotten anything for " + str(gracetime) + " seconds. Presumed dead.")

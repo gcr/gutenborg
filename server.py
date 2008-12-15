@@ -98,6 +98,10 @@ class Root:
 		cherrypy.session.acquire_lock()
 		user = cherrypy.session['user']
 		cherrypy.session.release_lock()
+		# Update the user's time so they don't timeout
+		user.touch_time()
+		# Timeout all the users
+		self.gb.timeout_users()
 		return user.get_events()
 		
 	wait.exposed = True
