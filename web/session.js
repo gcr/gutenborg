@@ -26,7 +26,9 @@ session.init = function() {
     // if we log in.
     session.getServerInfo();
     pagehandler.init();
-    if (! session.logged_in) {
+    if (session.logged_in) {
+        pagehandler.drawMessageSubmitBox();
+    } else {
         // If we're not logged in, we want a login from.
         pagehandler.drawLoginForm();
     }

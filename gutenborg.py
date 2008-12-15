@@ -36,13 +36,12 @@ class Gutenborg:
 		"""
 		Sends an event to every active user
 		"""
-		print "Event:", event
 		for u in self.active_users:
 			try:
 				u.add_event(event)
-				print "(Added to " + u.name + "'s queue)"
 			except Queue.Full:
-				print "User " + u.name + "'s queue full! Disconnected."
+				# Sometimes the above function fails. Well, we gotta
+				# disconnect them, I'm afraid.
 				self.disconnect_user(u)
 		
 	def add_user(self, user):
@@ -57,12 +56,12 @@ class Gutenborg:
 			# User is in the dead list. Put him on the active list.
 			self.dead_users.remove(user)
 			self.active_users.append(user)
-			self.send_event("User is now online: " + str(user))
+			self.send_event("** Returning user: " + str(user))
 		else:
 			# Not in the active list, not in the dead list...
 			# Must be a new one!
 			self.active_users.append(user)
-			self.send_event("New user: " + str(user))
+			self.send_event("** New user: " + str(user))
 	
 	def disconnect_user(self, user):
 		"""
@@ -71,5 +70,5 @@ class Gutenborg:
 		"""
 		self.active_users.remove(user)
 		self.dead_users.append(user)
-		self.send_event("User disappeared: "+ str(user))
+		self.send_event("** User disappeared: "+ str(user))
 	

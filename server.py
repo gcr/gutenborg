@@ -29,11 +29,11 @@ class Root:
 	def __init__(self, name, tagline):
 		self.gb = Gutenborg(name, tagline)
 		
-		# Some server test things
-		self.u = User(self.gb, "Mike", "Blue")
-		self.me = User(self.gb, "Becca", "Red")
-		self.gb.add_user(self.u)
-		self.gb.add_user(self.me)
+		# Some server test things #Don't need anymore.
+		#self.u = User(self.gb, "Mike", "Blue")
+		#self.me = User(self.gb, "Becca", "Red")
+		#self.gb.add_user(self.u)
+		#self.gb.add_user(self.me)
 	
 	def is_logged_in(self):
 		""" Returns true if your session username is in the active user list,
@@ -87,8 +87,8 @@ class Root:
 		cherrypy.session.acquire_lock()
 		assert self.is_logged_in(), "User not logged in"
 		assert 'message' in args, "No message sent"
-		self.gb.send_event("User " + cherrypy.session['user'].name + " said: "
-			+ args['message'] + ".")
+		self.gb.send_event(cherrypy.session['user'].name + ": "
+			+ args['message'])
 		return "Message posted"
 	new.exposed = True
 	

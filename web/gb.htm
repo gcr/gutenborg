@@ -22,9 +22,6 @@ $(document).ready(function(){
         async: true
     });
 	
-	$("div").click(function() {
-		session.sendEvent("New Event!");
-	});
 	
 	// Start the session
 	session.init();
@@ -35,7 +32,6 @@ $(document).ready(function(){
 </head>
 <body>
 <h1 class='sname'>…</h1><h2 class='stag'>…</h2>
-<div>Click for a new event!</div>
 <div class='responseholder'></div>
 </body>
 </html>

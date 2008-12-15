@@ -37,7 +37,7 @@ class User:
 		self.gutenborg = newgutenborg
 	
 	def __str__(self):
-		return "User \n  Name: " + self.name + "\n  Color: " + self.color
+		return "<(User) Name: " + self.name + ", Color: " + self.color + ">"
 	
 	def __eq__(self, u):
 		""" Returns true if one user is equal to another  (this only

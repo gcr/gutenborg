@@ -49,7 +49,22 @@ pagehandler.drawLoginForm = function() {
             // Clean up when we're done
             $(loginform).fadeOut("slow", function() {$(this).remove();});
             return false;
-        });
-        
+        });        
     }
+}
+
+pagehandler.drawMessageSubmitBox = function() {
+    // This function draws a small message box where you can
+    // say something if you'd like.
+    boxform = $("<div class='messagesubmit'></div>").insertBefore(".responseholder");
+    boxform.append("<form id='loginform'>"
+            + "<input id='message' type='text' />"
+            + "<input type='submit' val='Send' /></form>");
+    $("form", boxform).submit(function(event) {
+        message = $("#message").val();
+        session.sendEvent(message);
+        $("#message").val("");
+        
+        return false;
+    });
 }
