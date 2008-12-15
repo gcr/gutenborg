@@ -101,7 +101,7 @@ class Root:
 		# Update the user's time so they don't timeout
 		user.touch_time()
 		# Timeout all the users
-		self.gb.timeout_users()
+		self.gb.timeout_users(20)
 		return user.get_events()
 		
 	wait.exposed = True

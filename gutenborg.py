@@ -66,7 +66,7 @@ class Gutenborg:
 		self.active_users.remove(user)
 		self.dead_users.append(user)
 		# Make sure that this comes AFTER the user is removed
-		# else it could cause infinite loops to happen if the user object
+		# else it could cause infinite loops if the user object
 		# itself triggered the disconnect.
 		self.send_event("** User disappeared: "+ str(user))
 		
