@@ -75,7 +75,6 @@ class Gutenborg:
 		This function times out all users who haven't asked for any
 		events recently. We'll presume them dead.
 		"""
-		print "Timing out users"
 		for u in self.active_users:
 			u.try_timeout(gracetime)
 			

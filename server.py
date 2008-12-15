@@ -44,6 +44,10 @@ class Root:
 			return False
 	
 	def login(self, **args):
+		"""
+		Creates a new user and adds them to the gutenborg object if
+		they aren't already.
+		"""
 		cherrypy.session.acquire_lock()
 		if self.is_logged_in():
 			# Can't be logged in more than once
@@ -60,6 +64,17 @@ class Root:
 		else:
 			return "Bad request"
 	login.exposed = True
+	
+	def logout(self, **args):
+		"""
+		Logs a user out
+		"""
+		cherrypy.session.acquire_lock()
+		assert self.is_logged_in(), "User not logged in"
+		self.gb.disconnect_user(cherrypy.session['user'])
+		del cherrypy.session['user']
+		raise cherrypy.HTTPRedirect("/")
+	logout.exposed = True
 	
 	def info(self, **args):
 		"""
@@ -125,6 +140,6 @@ conf = {'/': {
 'tools.staticdir.dir': 'web',
 'response.stream' : True
 }}
-pageroot = Root("Development test server", "Caution: May Explode")
+pageroot = Root("Development server", "Caution: May Explode")
 cherrypy.quickstart(pageroot, '/', conf)
 

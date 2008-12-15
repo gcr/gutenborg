@@ -35,7 +35,7 @@ pagehandler.drawLoginForm = function() {
         loginform.html("<b>You are not logged in!</b><br />");
         loginform.append("<form id='loginform'>"
             + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
-            + "<tr><td>Color:</td><td><input id='ucolor' type='text' /></td></tr>"
+            //+ "<tr><td>Color:</td><td><input id='ucolor' type='text' /></td></tr>"
             + "<tr><td colspan=2><input type='submit' val='Log in' /></td></tr></table>"
             + "</form>");
             
@@ -59,7 +59,7 @@ pagehandler.drawMessageSubmitBox = function() {
     boxform = $("<div class='messagesubmit'></div>").insertBefore(".responseholder");
     boxform.append("<form id='loginform'>"
             + "<input id='message' type='text' />"
-            + "<input type='submit' value='Send' /></form>");
+            + "<input type='submit' value='Send' /> <a href='logout'>Logout</a></form>");
     $("form", boxform).submit(function(event) {
         message = $("#message").val();
         session.sendEvent(message);
