@@ -50,8 +50,10 @@ class Root:
 		they aren't already.
 		"""
 		cherrypy.session.acquire_lock()
+		
 		if self.is_logged_in():
 			# Can't be logged in more than once
+			# TODO: Please change to an assert
 			return "This session already has a logged in user."
 			
 		if 'name' in args and 'color' in args:
@@ -95,7 +97,7 @@ class Root:
 		
 		# Are we logged in?
 		if self.is_logged_in():
-			response['myuser'] = cherrypy.session['user'].name
+			response['logged_in_username'] = cherrypy.session['user'].name
 		return json.write(response)
 	info.exposed = True
 	
@@ -112,6 +114,7 @@ class Root:
 	def wait(self, **args):
 		cherrypy.session.acquire_lock()
 		assert self.is_logged_in(), "User is not logged in"
+		assert 'last' in args, "History required."
 		
 		user = cherrypy.session['user']
 		cherrypy.session.release_lock()
@@ -119,7 +122,7 @@ class Root:
 		user.touch_time()
 		# Timeout all the users
 		self.gb.timeout_users(20)
-		return user.get_events()
+		return user.get_events(int(args['last']))
 		
 	wait.exposed = True
 	

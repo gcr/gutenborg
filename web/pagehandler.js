@@ -26,6 +26,16 @@ pagehandler.init = function() {
     // Draws the page for the first time.
     $(".sname").text(session.servername);
     $(".stag").text(session.servertag);
+    
+    // This code was originally in session.init(). I decided to
+    // move it here because even though it involves the choice of whether
+    // a user is logged in, it seems more like a GUI issue.
+    if (session.logged_in) {
+            pagehandler.drawMessageSubmitBox();
+        } else {
+            // If we're not logged in, we want a login from.
+            pagehandler.drawLoginForm();
+        }
 }
 
 pagehandler.drawLoginForm = function() {
@@ -47,6 +57,7 @@ pagehandler.drawLoginForm = function() {
             // Login with our session object
             session.login(uname, ucolor);
             // Clean up when we're done
+            // We can access loginform because of closures.
             $(loginform).fadeOut("slow", function() {$(this).remove();});
             return false;
         });        

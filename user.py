@@ -17,7 +17,7 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 
-import Queue
+from threading import Event
 import json
 import time
 
@@ -32,11 +32,12 @@ class User:
 		newname is the user's name.
 		newcolor is the user's color.
 		"""
-		self.queue = Queue.Queue(15)
+		self.eventAdded = Event()
 		self.name = newname
 		self.color = newcolor
 		self.gutenborg = newgutenborg
 		self.lastime = time.time()
+		self.history = []
 	
 	def __str__(self):
 		return "<(User) Name: " + self.name + ", Color: " + self.color + ">"
@@ -49,44 +50,40 @@ class User:
 		else:
 			return False
 			
-	def get_events(self):
+	def get_events(self, last):
 		"""
-		Returns the events in the event queue or waits for a new one.
+		Returns the events in the event list since last
+		or waits for a new one.
 		
-		If the queue isn't empty, return all the queue objects
+		If the list isn't empty, return all the event objects
 		and immediately stop.
-		If the queue *is* empty, wait until something interesting
+		If the list *is* empty, wait until something interesting
 		happens.
 		Events are returned as a simple JSON list of Event objects.
 		"""
-		if (self.queue.empty()):
-			try:
-				# Wait for 10 seconds
-				value = self.queue.get(True, 10)
-				self.queue.task_done()
-				return json.write([value])
-			except Queue.Empty:
-				# We didn't get anything in ten seconds, return
-				# an empty list.
-				return json.write([])
-		else:
-			# The queue is NOT empty. Return everything and
-			# then stop.
-			values = []
-			while not self.queue.empty():
-				values.append(self.queue.get(False))
-			return json.write(values)
+		eventNum = len(self.history)
+		if (eventNum < last):
+			# Checking
+			last = eventNum
+		response = self.history[last:]
+		if len(response) == 0:
+			# We aren't returning anything! Better wait for something.
+			self.eventAdded.wait(10)
+			# If we have something, clear the event. If we don't,
+			# we clear it anyway.
+			self.eventAdded.clear()
+			response.extend(self.history[last:])
+		return json.write(response)
+		
 	
 	def add_event(self, event):
 		"""
 		Addse the event to the user's event queue.
 		"""
-		try:
-			self.queue.put(event, False)
-		except Queue.Full:
-			# Uh oh! Are we full? Oh dear! Better commit suicide!
-			self.gutenborg.disconnect_user(self)
-			self.gutenborg.send_event("** " + user.name + "'s queue overflowed! Presumed dead.")
+		# Add this event to our history
+		self.history.append(event)
+		# Make sure that everyone knows about it
+		self.eventAdded.set()
 	
 	def change_name(self, newname):
 		"""

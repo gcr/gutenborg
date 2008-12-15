@@ -21,14 +21,16 @@ $(document).ready(function(){
         cache: false,
         async: true
     });
+    
+    // Error function
 	$(document).ajaxError(function (event, xhr, options, error) {
-		if (xhr.status != 200) {
+		if (xhr.status == 500) {
 			console.log(xhr)
 			document.write(xhr.responseText)
 		}
 	});
 	
-	// Start the session
+	// Start the session. This will also draw the page.
 	session.init();
 	
 	

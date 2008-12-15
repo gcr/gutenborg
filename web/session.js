@@ -24,49 +24,46 @@ session = new Object();
 session.init = function() {
     // Starts up the session. Should be done again
     // if we log in.
-    session.getServerInfo();
-    pagehandler.init();
-    if (session.logged_in) {
-        pagehandler.drawMessageSubmitBox();
-    } else {
-        // If we're not logged in, we want a login from.
-        pagehandler.drawLoginForm();
-    }
-    session.waitForEvents();
+    session.lastevent = 0; // This variable is used for history.
+    // We can query the server to only show us our events after this history.
+    
+    session.getServerInfo(function() {
+        // This is a callback. It should be executed after the server
+        // information is gotten.
+        pagehandler.init(); // Begin drawing the page
+        session.waitForEvents();
+    });
 }
 
-session.getServerInfo = function() {
-    // Asks the server for information, stores it in the session object
-    
-    // This is an asynchronous request.
-    data = $.ajax({
-          url: "info",
-          async: false, // Magic here
-          cache: false,
-          dataType: 'json',
-          success: function(data) {
-            session.servername = data['name'];
-            session.servertag = data['tag'];
-            session.active_users = data['active_users'];
-            session.dead_users = data['dead_users'];
-            if (data['myuser']) {
-                // Are we logged in?
-                session.logged_in = true;
-                session.myname = data['myuser'];
-            } else {
-                // No we are not!
-                session.logged_in = false;
-                session.myname = '';
-            }
+session.getServerInfo = function(callback) {
+    // Asks the server for information, stores it in the session object,
+    // then executes the callback.
+    $.getJSON("info", function(data) {
+        session.servername = data.name;
+        session.servertag = data.tag;
+        session.active_users = data.active_users;
+        session.dead_users = data.dead_users;
+        if (data.logged_in_username) {
+            // Are we logged in?
+            session.logged_in = true;
+            session.myname = data.logged_in_username;
+        } else {
+            // No we are not!
+            session.logged_in = false;
+            session.myname = '';
         }
+        // Now that we're done, closures *should* let us be able
+        // to do this.
+        callback();
      });
 }
 
 session.waitForEvents = function() {
     // Waits for events. Uses AJAX long polling.
     if (session.logged_in) {
-        $.getJSON("wait", function(response){
+        $.getJSON("wait", {last: session.lastevent},function(response){
             $.each(response, function(i, event) {
+                session.lastevent++;
                 session.handleEvent(event);
             });
             session.waitForEvents();
