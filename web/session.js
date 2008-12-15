@@ -78,7 +78,7 @@ session.handleEvent = function(event) {
     $("<div class='response'></div>").appendTo(".responseholder").hide().text(event).fadeIn();
 }
 session.sendEvent = function(event) {
-    // Sends a new event to all users.
+    // Sends a new event to all users. NOTE: This should be serialized.
     if (session.logged_in) {
         $.getJSON("new", {message: event});
     }

@@ -36,24 +36,26 @@ class Root:
 		self.gb.add_user(self.me)
 	
 	def is_logged_in(self):
-		""" Returns true if you're logged in, false otherwise """
-		if 'user' in cherrypy.session:
+		""" Returns true if your session username is in the active user list,
+		false if your session username is not in the active user list."""
+		if 'user' in cherrypy.session and cherrypy.session['user'] in self.gb.active_users:
 			return True
 		else:
 			return False
 	
 	def login(self, **args):
-		# TODO: Actually, we gotta see if another user
-		# with the same name but a different computer
-		# is logged in. This functionality is already in the gutenborg class.
 		cherrypy.session.acquire_lock()
 		if self.is_logged_in():
 			# Can't be logged in more than once
-			return "User already logged in!"
+			return "This session already has a logged in user."
 			
 		if 'name' in args and 'color' in args:
 			cherrypy.session['user'] = User(self.gb, args['name'], args['color'])
-			self.gb.add_user(cherrypy.session['user'])
+			try:
+				self.gb.add_user(cherrypy.session['user'])
+			except NameError:
+				del cherrypy.session['user']
+				return "User could not be added because this user exists on another computer."
 			return "User added"
 		else:
 			return "Bad request"

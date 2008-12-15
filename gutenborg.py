@@ -52,7 +52,7 @@ class Gutenborg:
 		if user in self.active_users:
 			# User is already logged in, do nothing.
 			# TODO: User needs to know this!
-			pass
+			raise NameError, "User already exists"
 		elif user in self.dead_users:
 			# User is in the dead list. Put him on the active list.
 			self.dead_users.remove(user)
