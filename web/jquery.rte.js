@@ -66,7 +66,7 @@ jQuery.fn.rte = function(css_url, media_url) {
         textarea.after(iframe);
         var css = "";
         if(css_url)
-            var css = "<link type='text/css' rel='stylesheet' href='"+css_url+"' />"
+            css = "<link type='text/css' rel='stylesheet' href='"+css_url+"' />"
         var content = textarea.val();
         // Mozilla need this to display caret
         if($.trim(content)=='')
@@ -84,7 +84,7 @@ jQuery.fn.rte = function(css_url, media_url) {
         if(submit==true)
             var textarea = $('<input type="hidden" />');
         else
-            var textarea = $('<textarea cols="40" rows="10"></textarea>');
+            textarea = $('<textarea cols="40" rows="10"></textarea>');
         textarea.val(content);
         t = textarea.get(0);
         if(iframe.className)

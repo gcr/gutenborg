@@ -17,8 +17,6 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 
-from user import User
-
 class Gutenborg:
 	"""
 	This class defines a copy of Gutenborg. It includes active users, dead users,

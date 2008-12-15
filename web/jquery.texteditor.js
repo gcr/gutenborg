@@ -49,6 +49,6 @@ jQuery.fn.document = function(server, documentnumber, nick) {
             }
         });
         */
-    };
+    }
 
 }

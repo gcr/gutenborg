@@ -50,12 +50,9 @@ class Root:
 		they aren't already.
 		"""
 		cherrypy.session.acquire_lock()
+
+        assert not self.is_logged_in(), "This session already has a logged in user."
 		
-		if self.is_logged_in():
-			# Can't be logged in more than once
-			# TODO: Please change to an assert
-			return "This session already has a logged in user."
-			
 		if 'name' in args and 'color' in args:
 			cherrypy.session['user'] = User(self.gb, args['name'], args['color'])
 			try:
