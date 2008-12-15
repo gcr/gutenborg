@@ -59,7 +59,7 @@ pagehandler.drawMessageSubmitBox = function() {
     boxform = $("<div class='messagesubmit'></div>").insertBefore(".responseholder");
     boxform.append("<form id='loginform'>"
             + "<input id='message' type='text' />"
-            + "<input type='submit' val='Send' /></form>");
+            + "<input type='submit' value='Send' /></form>");
     $("form", boxform).submit(function(event) {
         message = $("#message").val();
         session.sendEvent(message);

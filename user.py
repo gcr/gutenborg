@@ -42,7 +42,7 @@ class User:
 	def __eq__(self, u):
 		""" Returns true if one user is equal to another  (this only
 		depends on the username)"""
-		if self.name == u.name:
+		if self.name.lower() == u.name.lower():
 			return True
 		else:
 			return False
@@ -79,7 +79,11 @@ class User:
 		"""
 		Addse the event to the user's event queue.
 		"""
-		self.queue.put(event, False)
+		try:
+			self.queue.put(event, False)
+		except Queue.Full:
+			# Uh oh! Are we full? Oh dear!
+			self.disconnect_user(self)
 	
 	def change_name(self, newname):
 		"""

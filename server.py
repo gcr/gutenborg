@@ -84,6 +84,7 @@ class Root:
 	info.exposed = True
 	
 	def new(self, **args):
+		# Sends a new text string event to every user
 		cherrypy.session.acquire_lock()
 		assert self.is_logged_in(), "User not logged in"
 		assert 'message' in args, "No message sent"
@@ -120,6 +121,6 @@ conf = {'/': {
 'tools.staticdir.dir': 'web',
 'response.stream' : True
 }}
-pageroot = Root("Dev server", "Caution: May Explode")
+pageroot = Root("Development test server", "Caution: May Explode")
 cherrypy.quickstart(pageroot, '/', conf)
 

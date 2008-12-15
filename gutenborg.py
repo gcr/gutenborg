@@ -18,7 +18,6 @@
 #       MA 02110-1301, USA.
 
 from user import User
-import Queue
 
 class Gutenborg:
 	"""
@@ -36,13 +35,9 @@ class Gutenborg:
 		"""
 		Sends an event to every active user
 		"""
+		print event
 		for u in self.active_users:
-			try:
-				u.add_event(event)
-			except Queue.Full:
-				# Sometimes the above function fails. Well, we gotta
-				# disconnect them, I'm afraid.
-				self.disconnect_user(u)
+			u.add_event(event)
 		
 	def add_user(self, user):
 		"""
@@ -50,10 +45,10 @@ class Gutenborg:
 		"""
 		if user in self.active_users:
 			# User is already logged in, do nothing.
-			# TODO: User needs to know this!
 			raise NameError, "User already exists"
 		elif user in self.dead_users:
-			# User is in the dead list. Put him on the active list.
+			# User is in the dead list. Remove him from the dead list
+			# and add him to the active list.
 			self.dead_users.remove(user)
 			self.active_users.append(user)
 			self.send_event("** Returning user: " + str(user))
@@ -70,5 +65,8 @@ class Gutenborg:
 		"""
 		self.active_users.remove(user)
 		self.dead_users.append(user)
+		# Make sure that this comes AFTER the user is removed
+		# else it could cause infinite loops to happen if the user object
+		# itself triggered the disconnect.
 		self.send_event("** User disappeared: "+ str(user))
-	
+		
