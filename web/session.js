@@ -21,6 +21,18 @@
 
 session = new Object();
 
+session.init = function() {
+    // Starts up the session. Should be done again
+    // if we log in.
+    session.getServerInfo();
+    pagehandler.init();
+    if (! session.logged_in) {
+        // If we're not logged in, we want a login from.
+        pagehandler.drawLoginForm();
+    }
+    session.waitForEvents();
+}
+
 session.getServerInfo = function() {
     // Asks the server for information, stores it in the session object
     
@@ -46,21 +58,6 @@ session.getServerInfo = function() {
             }
         }
      });
-
-     
-}
-
-session.init = function() {
-    // Starts up the session. Should be done again
-    // if we log in.
-    session.getServerInfo();
-    pagehandler.init();
-    session.waitForEvents();
-}
-
-session.handleEvent = function(event) {
-    // When we get an event, this function describes what to do with it.
-    $("<div class='response'></div>").appendTo(".responseholder").hide().text(event).fadeIn();
 }
 
 session.waitForEvents = function() {
@@ -75,9 +72,21 @@ session.waitForEvents = function() {
     }
 }
 
+session.handleEvent = function(event) {
+    // When we get an event, this function describes what to do with it.
+    // TODO: Gotta change this up.
+    $("<div class='response'></div>").appendTo(".responseholder").hide().text(event).fadeIn();
+}
 session.sendEvent = function(event) {
     // Sends a new event to all users.
     if (session.logged_in) {
         $.getJSON("new", {message: event});
     }
+}
+
+session.login = function(name, color){
+    // This method logs us in and then resets the session.
+    $.get("login", {"name": name, "color": color}, function() {
+        session.init();
+    });
 }

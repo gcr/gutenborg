@@ -27,3 +27,29 @@ pagehandler.init = function() {
     $(".sname").text(session.servername);
     $(".stag").text(session.servertag);
 }
+
+pagehandler.drawLoginForm = function() {
+    // Draws a new login form, assigns handlers.
+    if (! session.logged_in) {
+        loginform = $("<div class='.loginform'></div>").appendTo("body");
+        loginform.html("<b>You are not logged in!</b><br />");
+        loginform.append("<form id='loginform'>"
+            + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
+            + "<tr><td>Color:</td><td><input id='ucolor' type='text' /></td></tr>"
+            + "<tr><td colspan=2><input type='submit' val='Log in' /></td></tr></table>"
+            + "</form>");
+            
+        // Now that we got our form, what do we do with it?
+        $("form", loginform).submit(function (event) {
+            uname = $("#uname").val();
+            ucolor = $("#ucolor").val();
+            
+            // Login with our session object
+            session.login(uname, ucolor);
+            // Clean up when we're done
+            $(loginform).fadeOut("slow", function() {$(this).remove();});
+            return false;
+        });
+        
+    }
+}
