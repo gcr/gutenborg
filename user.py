@@ -114,4 +114,4 @@ class User:
 			# Was the last update more than gracetime time ago?
 			# Commit suicide
 			self.gutenborg.disconnect_user(self)
-			self.gutenborg.send_event("** " + self.name + " hasn't gotten anything for " + str(gracetime) + " seconds. Presumed dead.")
+			self.gutenborg.send_event("** " + self.name + " is more than " + str(gracetime) + " seconds behind the times. Presumed dead.")

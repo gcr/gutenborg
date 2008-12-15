@@ -20,7 +20,7 @@
 
 import cherrypy
 import json
-import Queue
+
 
 from gutenborg import Gutenborg
 from user import User
@@ -36,8 +36,9 @@ class Root:
 		#self.gb.add_user(self.me)
 	
 	def is_logged_in(self):
-		""" Returns true if your session username is in the active user list,
-		false if your session username is not in the active user list."""
+		""" Private method: Returns true if your session username is in
+		the active user list, false if your session username is not in
+		the active user list."""
 		if 'user' in cherrypy.session and cherrypy.session['user'] in self.gb.active_users:
 			return True
 		else:
@@ -109,8 +110,9 @@ class Root:
 	new.exposed = True
 	
 	def wait(self, **args):
-		assert self.is_logged_in(), "User is not logged in"
 		cherrypy.session.acquire_lock()
+		assert self.is_logged_in(), "User is not logged in"
+		
 		user = cherrypy.session['user']
 		cherrypy.session.release_lock()
 		# Update the user's time so they don't timeout
@@ -129,7 +131,7 @@ class Root:
 
 cherrypy.config.update({
 'server.socket_port': 8000,
-'server.thread_pool': 32, # Max connected users
+'server.thread_pool': 32, # Max connected users = this/2
 'tools.sessions.on': True,
 'tools.sessions.locking': 'explicit',
 'tools.staticdir.root': "/home/michael/Projects/collab"

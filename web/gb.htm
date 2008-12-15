@@ -21,7 +21,12 @@ $(document).ready(function(){
         cache: false,
         async: true
     });
-	
+	$(document).ajaxError(function (event, xhr, options, error) {
+		if (xhr.status != 200) {
+			console.log(xhr)
+			document.write(xhr.responseText)
+		}
+	});
 	
 	// Start the session
 	session.init();
