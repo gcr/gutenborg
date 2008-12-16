@@ -22,93 +22,93 @@ import json
 import time
 
 class User:
-	"""Represents a Gutenborg user"""
-	def __init__(self, newgutenborg, newname, newcolor):
-		"""
-		Creates a new user.
-		
-		newgutenborg is an object referring to the Gutenborg instance.
-			Used to send other users events.
-		newname is the user's name.
-		newcolor is the user's color.
-		"""
-		self.eventAdded = Event()
-		self.name = newname
-		self.color = newcolor
-		self.gutenborg = newgutenborg
-		self.lastime = time.time()
-		self.history = []
-	
-	def __str__(self):
-		return "<(User) Name: " + self.name + ", Color: " + self.color + ">"
-	
-	def __eq__(self, u):
-		""" Returns true if one user is equal to another  (this only
-		depends on the username)"""
-		if self.name.lower() == u.name.lower():
-			return True
-		else:
-			return False
-			
-	def get_events(self, last):
-		"""
-		Returns the events in the event list since last
-		or waits for a new one.
-		
-		If the list isn't empty, return all the event objects
-		and immediately stop.
-		If the list *is* empty, wait until something interesting
-		happens.
-		Events are returned as a simple JSON list of Event objects.
-		"""
-		eventNum = len(self.history)
-		if (eventNum < last):
-			# Checking
-			last = eventNum
-		response = self.history[last:]
-		if len(response) == 0:
-			# We aren't returning anything! Better wait for something.
-			self.eventAdded.wait(10)
-			# If we have something, clear the event. If we don't,
-			# we clear it anyway.
-			self.eventAdded.clear()
-			response.extend(self.history[last:])
-		return json.write(response)
-		
-	
-	def add_event(self, event):
-		"""
-		Addse the event to the user's event queue.
-		"""
-		# Add this event to our history
-		self.history.append(event)
-		# Make sure that everyone knows about it
-		self.eventAdded.set()
-	
-	def change_name(self, newname):
-		"""
-		Changes this user's name.
-		"""
-		self.name = newname
-		self.gutenborg.send_event("User " + self.name + " changed his name")
-	
-	def change_color(self, newcolor):
-		"""
-		Changes this user's color.
-		"""
-		self.color = newcolor
-		self.gutenborg.send_event("User " + self.name + " changed his color")
-	
-	def touch_time(self):
-		"""
-		Touches the last time
-		"""
-		self.lastime = time.time()
-	
-	def try_timeout(self, gracetime=60):
-		now = time.time()
-		if (now - self.lastime >= gracetime):
-			# Was the last update more than gracetime time ago?
-			# Commit suicide
-			self.gutenborg.disconnect_user(self)
-			self.gutenborg.send_event("** " + self.name + " is more than " + str(gracetime) + " seconds behind the times. Presumed dead.")
+    """Represents a Gutenborg user"""
+    def __init__(self, newgutenborg, newname, newcolor):
+        """
+        Creates a new user.
+        
+        newgutenborg is an object referring to the Gutenborg instance.
+            Used to send other users events.
+        newname is the user's name.
+        newcolor is the user's color.
+        """
+        self.eventAdded = Event()
+        self.name = newname
+        self.color = newcolor
+        self.gutenborg = newgutenborg
+        self.lastime = time.time()
+        self.history = []
+    
+    def __str__(self):
+        return "<(User) Name: " + self.name + ", Color: " + self.color + ">"
+    
+    def __eq__(self, u):
+        """ Returns true if one user is equal to another  (this only
+        depends on the username)"""
+        if self.name.lower() == u.name.lower():
+            return True
+        else:
+            return False
+            
+    def get_events(self, last):
+        """
+        Returns the events in the event list since last
+        or waits for a new one.
+        
+        If the list isn't empty, return all the event objects
+        and immediately stop.
+        If the list *is* empty, wait until something interesting
+        happens.
+        Events are returned as a simple JSON list of Event objects.
+        """
+        eventNum = len(self.history)
+        if (eventNum < last):
+            # Checking
+            last = eventNum
+        response = self.history[last:]
+        if len(response) == 0:
+            # We aren't returning anything! Better wait for something.
+            self.eventAdded.wait(10)
+            # If we have something, clear the event. If we don't,
+            # we clear it anyway.
+            self.eventAdded.clear()
+            response.extend(self.history[last:])
+        return json.write(response)
+        
+    
+    def add_event(self, event):
+        """
+        Addse the event to the user's event queue.
+        """
+        # Add this event to our history
+        self.history.append(event)
+        # Make sure that everyone knows about it
+        self.eventAdded.set()
+    
+    def change_name(self, newname):
+        """
+        Changes this user's name.
+        """
+        self.name = newname
+        self.gutenborg.send_event("User " + self.name + " changed his name")
+    
+    def change_color(self, newcolor):
+        """
+        Changes this user's color.
+        """
+        self.color = newcolor
+        self.gutenborg.send_event("User " + self.name + " changed his color")
+    
+    def touch_time(self):
+        """
+        Touches the last time
+        """
+        self.lastime = time.time()
+    
+    def try_timeout(self, gracetime=60):
+        now = time.time()
+        if (now - self.lastime >= gracetime):
+            # Was the last update more than gracetime time ago?
+            # Commit suicide
+            self.gutenborg.disconnect_user(self)
+            self.gutenborg.send_event("** " + self.name + " is more than " + str(gracetime) + " seconds behind the times. Presumed dead.")

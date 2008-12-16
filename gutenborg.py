@@ -18,62 +18,62 @@
 #       MA 02110-1301, USA.
 
 class Gutenborg:
-	"""
-	This class defines a copy of Gutenborg. It includes active users, dead users,
-	documents, and some events for manipulating them.
-	"""
-	def __init__(self, name, tagline):
-		self.active_users = [] 	# List of users
-		self.dead_users = []
-		self.name = name		# Server name
-		self.tagline = tagline	# Server tagline
-		self.documents = [] 	# List of documents
-	
-	def send_event(self, event):
-		"""
-		Sends an event to every active user
-		"""
-		print event
-		for u in self.active_users:
-			u.add_event(event)
-		
-	def add_user(self, user):
-		"""
-		Creates a new user and adds him to the active user list.
-		"""
-		if user in self.active_users:
-			# User is already logged in, do nothing.
-			raise NameError, "User already exists in active user list"
-		elif user in self.dead_users:
-			# User is in the dead list. Remove him from the dead list
-			# and add him to the active list.
-			self.dead_users.remove(user)
-			self.active_users.append(user)
-			self.send_event("** Returning user: " + str(user))
-		else:
-			# Not in the active list, not in the dead list...
-			# Must be a new one!
-			self.active_users.append(user)
-			self.send_event("** New user: " + str(user))
-	
-	def disconnect_user(self, user):
-		"""
-		Moves a user from the active list to the dead list. (Users
-		are never actually deleted.)
-		"""
-		self.active_users.remove(user)
-		self.dead_users.append(user)
-		# Make sure that this comes AFTER the user is removed
-		# else it could cause infinite loops if the user object
-		# itself triggered the disconnect.
-		self.send_event("** User disappeared: "+ str(user))
-		
-	def timeout_users(self, gracetime):
-		"""
-		This function times out all users who haven't asked for any
-		events recently. We'll presume them dead.
-		"""
-		for u in self.active_users:
-			u.try_timeout(gracetime)
-			
-	
+    """
+    This class defines a copy of Gutenborg. It includes active users, dead users,
+    documents, and some events for manipulating them.
+    """
+    def __init__(self, name, tagline):
+        self.active_users = []     # List of users
+        self.dead_users = []
+        self.name = name        # Server name
+        self.tagline = tagline    # Server tagline
+        self.documents = []     # List of documents
+    
+    def send_event(self, event):
+        """
+        Sends an event to every active user
+        """
+        print event
+        for u in self.active_users:
+            u.add_event(event)
+        
+    def add_user(self, user):
+        """
+        Creates a new user and adds him to the active user list.
+        """
+        if user in self.active_users:
+            # User is already logged in, do nothing.
+            raise NameError, "User already exists in active user list"
+        elif user in self.dead_users:
+            # User is in the dead list. Remove him from the dead list
+            # and add him to the active list.
+            self.dead_users.remove(user)
+            self.active_users.append(user)
+            self.send_event("** Returning user: " + str(user))
+        else:
+            # Not in the active list, not in the dead list...
+            # Must be a new one!
+            self.active_users.append(user)
+            self.send_event("** New user: " + str(user))
+    
+    def disconnect_user(self, user):
+        """
+        Moves a user from the active list to the dead list. (Users
+        are never actually deleted.)
+        """
+        self.active_users.remove(user)
+        self.dead_users.append(user)
+        # Make sure that this comes AFTER the user is removed
+        # else it could cause infinite loops if the user object
+        # itself triggered the disconnect.
+        self.send_event("** User disappeared: "+ str(user))
+        
+    def timeout_users(self, gracetime):
+        """
+        This function times out all users who haven't asked for any
+        events recently. We'll presume them dead.
+        """
+        for u in self.active_users:
+            u.try_timeout(gracetime)
+            
+    
