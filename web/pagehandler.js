@@ -26,7 +26,9 @@ pagehandler.init = function() {
     // Draws the page for the first time.
     $(".sname").text(session.servername);
     $(".stag").text(session.servertag);
-    
+
+    // Draws the userlist
+    pagehandler.drawUserList(session.active_users, "online");
     // This code was originally in session.init(). I decided to
     // move it here because even though it involves the choice of whether
     // a user is logged in, it seems more like a GUI issue.
@@ -67,7 +69,7 @@ pagehandler.drawLoginForm = function() {
 pagehandler.drawMessageSubmitBox = function() {
     // This function draws a small message box where you can
     // say something if you'd like.
-    boxform = $("<div class='messagesubmit'></div>").insertBefore(".responseholder");
+    boxform = $("<div class='messagesubmit'></div>").appendTo(".messagewriter");
     boxform.append("<form id='loginform'>"
             + "<input id='message' type='text' />"
             + "<input type='submit' value='Send' /> <a href='logout'>Logout</a></form>");
@@ -77,5 +79,28 @@ pagehandler.drawMessageSubmitBox = function() {
         $("#message").val("");
         
         return false;
+    });
+}
+
+pagehandler.drawUserList = function(users, cssclass) {
+    // This function empties the user list.
+    $(".userlist").empty();
+    $.each(users, function(index, u) {
+       var newitem = $("<li class='" + cssclass + "'></li>").text(u.name);
+       $(newitem).appendTo(".userlist");
+    });
+}
+
+pagehandler.drawNewUser = function(user, cssclass) {
+    // Draws a new user at the bottom of the list
+    var newitem = $("<li class='"+cssclass+"'></li>").text(user.name);
+    $(newitem).appendTo(".userlist").hide().fadeIn("slow");
+}
+
+pagehandler.removeUser = function(user, cssclass) {
+    $(".userlist li").each(function(index, u){
+        if ($(u).text() == user.name) {
+             $(this).fadeOut("slow", function(){$(this).remove();});
+        }
     });
 }

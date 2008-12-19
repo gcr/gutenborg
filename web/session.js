@@ -74,8 +74,31 @@ session.waitForEvents = function() {
 session.handleEvent = function(event) {
     // When we get an event, this function describes what to do with it.
     // TODO: Gotta change this up.
-    $("<div class='response'></div>").appendTo(".responseholder").hide().text(event).fadeIn();
+    switch (event.type) {
+        case "returning_user":
+            session.returning_user(event.user);
+            break;
+        case "new_user":
+            session.new_user(event.user);
+            break;
+        case "disconnected_user":
+            session.disconnect_user(event.user);
+            break;
+        case "user_color_change":
+            alert ("User changed his color: " + event.name + ", new color: " + event.newcolor);
+            break;
+        case "user_name_change":
+            alert ("User changed his name: " + event.oldname + ", new name: " + event.newname);
+            break;
+        //case "message":
+        //    alert("New message from " + event.username + ": " + event.message)
+        //    break;
+        default:
+            alert("Unknown Event! Please see console.");
+
+    }
 }
+
 session.sendEvent = function(event) {
     // Sends a new event to all users. NOTE: This should be serialized.
     if (session.logged_in) {
@@ -88,4 +111,49 @@ session.login = function(name, color){
     $.get("login", {"name": name, "color": color}, function() {
         session.init();
     });
+}
+
+session.new_user = function(u) {
+    // Only add the user if there isn't one already.
+    var match = false;
+    $.each(session.active_users, function(index, user) {
+        if (u.name == user.name) {match = true;}
+    });
+    if (!match) {
+        session.active_users.push(u);
+        pagehandler.drawNewUser(u, "online");
+    }
+}
+
+session.disconnect_user = function(leavingUser) {
+    // This function removes users from the active list and puts them on the
+    // dead list. Note that this only affects the client- no server-side
+    // voodoo involved.
+    
+    var numUsers = session.active_users.length;
+    for (var i=0; i<numUsers; i++) {
+        u = session.active_users[i];
+        if (u.name == leavingUser.name) {
+            numUsers--; // Decrease the number of users left to search
+            session.active_users.splice(i,1); // Remove this user
+            pagehandler.removeUser(leavingUser, "online"); // Un-draw this user
+            session.dead_users.push(leavingUser); // Add this user to the dead list
+        }
+    }
+}
+
+session.returning_user = function(returningUser) {
+    // This function removes users from the dead list and puts them
+    // on the active list. Note that this only affects the client.
+
+    var numUsers = session.dead_users.length;
+    for (var i=0; i<numUsers; i++) {
+        u = session.dead_users[i];
+        if (u.name == returningUser.name) {
+            numUsers--; // Decrease the number of users left to search
+            session.dead_users.splice(i,1); // Remove this user from the dead_list
+            pagehandler.drawNewUser(returningUser, "online") // Un-draw this user
+            session.active_users.push(returningUser); // Add this user to the active list
+        }
+    }
 }

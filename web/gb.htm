@@ -22,16 +22,14 @@ $(document).ready(function(){
         async: true
     });
 
-
-    
     // Error function
 	$(document).ajaxError(function (event, xhr, options, error) {
 		if (xhr.status == 500) {
 			console.log(xhr)
 			document.write(xhr.responseText)
-		}
+        }
 	});
-	
+    
 	// Start the session. This will also draw the page.
 	session.init();
 	
@@ -40,7 +38,11 @@ $(document).ready(function(){
 </script>
 </head>
 <body>
-<h1 class='sname'>…</h1><h2 class='stag'>…</h2>
+<h1 class='sname'>Connecting…</h1><h2 class='stag'>…</h2>
+<div class="userlistbox"><ul class="userlist">
+    <li class="online">Testing</li>
+</ul></div>
+<div class='messagewriter'></div>
 <div class='responseholder'></div>
 </body>
 </html>

@@ -33,7 +33,7 @@ class Gutenborg:
         """
         Sends an event to every active user
         """
-        print event
+        print repr(event)
         for u in self.active_users:
             u.add_event(event)
         
@@ -49,14 +49,14 @@ class Gutenborg:
             # and add him to the active list.
             self.dead_users.remove(user)
             self.active_users.append(user)
-            self.send_event("** Returning user: " + str(user))
+            self.send_event({"type": "returning_user", "user": user.get_state()})
         else:
             # Not in the active list, not in the dead list...
             # Must be a new one!
             self.active_users.append(user)
-            self.send_event("** New user: " + str(user))
+            self.send_event({"type": "new_user", "user": user.get_state()})
     
-    def disconnect_user(self, user):
+    def disconnect_user(self, user, reason):
         """
         Moves a user from the active list to the dead list. (Users
         are never actually deleted.)
@@ -66,7 +66,7 @@ class Gutenborg:
         # Make sure that this comes AFTER the user is removed
         # else it could cause infinite loops if the user object
         # itself triggered the disconnect.
-        self.send_event("** User disappeared: "+ str(user))
+        self.send_event({"type": "disconnected_user", "user": user.get_state(), "reason": reason})
         
     def timeout_users(self, gracetime):
         """

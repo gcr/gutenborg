@@ -10,8 +10,14 @@ h1 {
     text-align: center;
     margin-top: 0px;
     margin-bottom: 0px;
+    
 }
 h2 {
 	text-align: center;
 	margin-top: 0px;
+}
+.userlist .online {
+    list-style-image: url('img/status/online.png');
+    font-weight: bold;
+    
 }

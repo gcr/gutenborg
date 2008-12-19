@@ -17,9 +17,10 @@
 #       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #       MA 02110-1301, USA.
 
-from threading import Event
 import json
 import time
+
+from threading import Event
 
 class User:
     """Represents a Gutenborg user"""
@@ -89,15 +90,15 @@ class User:
         """
         Changes this user's name.
         """
+        self.gutenborg.send_event({"type": "user_name_change", "oldname": self.name, "newname": newname})
         self.name = newname
-        self.gutenborg.send_event("User " + self.name + " changed his name")
     
     def change_color(self, newcolor):
         """
         Changes this user's color.
         """
         self.color = newcolor
-        self.gutenborg.send_event("User " + self.name + " changed his color")
+        self.gutenborg.send_event({"type": "user_color_change", "name": self.name, "new_color": newcolor})
     
     def touch_time(self):
         """
@@ -110,5 +111,13 @@ class User:
         if (now - self.lastime >= gracetime):
             # Was the last update more than gracetime time ago?
             # Commit suicide
-            self.gutenborg.disconnect_user(self)
-            self.gutenborg.send_event("** " + self.name + " is more than " + str(gracetime) + " seconds behind the times. Presumed dead.")
+            self.gutenborg.disconnect_user(self, "timeout")
+            
+
+    def get_state(self):
+        """
+        Returns a dict containing some common user attributes. Used for
+        events and such. This is mostly for the benefit of the client.
+        """
+        return {"name": self.name, "color": self.color}
+    

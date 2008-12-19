@@ -20,8 +20,8 @@
 
 import cherrypy
 import json
-
-
+import sys
+import os
 from gutenborg import Gutenborg
 from user import User
 
@@ -34,7 +34,10 @@ class Root:
 #        self.me = User(self.gb, "Becca", "Red")
 #        self.gb.add_user(self.u)
 #        self.gb.add_user(self.me)
-    
+    def quit(self):
+        sys.exit();
+    quit.exposed = True
+
     def is_logged_in(self):
         """ Private method: Returns true if your session username is in
         the active user list, false if your session username is not in
@@ -52,17 +55,14 @@ class Root:
         cherrypy.session.acquire_lock()
         
         assert not self.is_logged_in(), "This session already has a logged in user."
-
-        if 'name' in args and 'color' in args:
-            cherrypy.session['user'] = User(self.gb, args['name'], args['color'])
-            try:
-                self.gb.add_user(cherrypy.session['user'])
-            except NameError:
-                del cherrypy.session['user']
-                return "User could not be added because this user exists on another computer."
-            return "User added"
-        else:
-            return "Bad request"
+        assert 'name' in args and 'color' in args, "Bad request."
+        cherrypy.session['user'] = User(self.gb, args['name'], args['color'])
+        try:
+            self.gb.add_user(cherrypy.session['user'])
+        except NameError:
+            del cherrypy.session['user']
+            return "User could not be added because this user exists on another computer."
+        return "User added"
     login.exposed = True
     
     def logout(self, **args):
@@ -71,7 +71,7 @@ class Root:
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User not logged in"
-        self.gb.disconnect_user(cherrypy.session['user'])
+        self.gb.disconnect_user(cherrypy.session['user'], "logout")
         del cherrypy.session['user']
         raise cherrypy.HTTPRedirect("/")
     logout.exposed = True
@@ -88,9 +88,9 @@ class Root:
         response['active_users'] = []
         response['dead_users'] = []
         for u in self.gb.active_users[:]:
-            response['active_users'].append({"name": u.name, "color": u.color})
+            response['active_users'].append(u.get_state())
         for u in self.gb.dead_users[:]:
-            response['dead_users'].append({"name": u.name, "color": u.color})
+            response['dead_users'].append(u.get_state())
         
         # Are we logged in?
         if self.is_logged_in():
@@ -103,8 +103,7 @@ class Root:
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User not logged in"
         assert 'message' in args, "No message sent"
-        self.gb.send_event(cherrypy.session['user'].name + ": "
-            + args['message'])
+        self.gb.send_event({"type": "message", "message": args['message'], "username" : cherrypy.session['user'].name})
         return "Message posted"
     new.exposed = True
     
@@ -134,7 +133,7 @@ cherrypy.config.update({
 'server.thread_pool': 32, # Max connected users = this/2
 'tools.sessions.on': True,
 'tools.sessions.locking': 'explicit',
-'tools.staticdir.root': "/home/michael/Projects/collab"
+'tools.staticdir.root': os.getcwd()
 })
 
 conf = {'/': {
