@@ -90,9 +90,9 @@ session.handleEvent = function(event) {
         case "user_name_change":
             alert ("User changed his name: " + event.oldname + ", new name: " + event.newname);
             break;
-        //case "message":
-        //    alert("New message from " + event.username + ": " + event.message)
-        //    break;
+        case "message":
+            $("<div class='message'></div>").text(event.username + ": " + event.message).appendTo(".responseholder").hide().show("slow");
+            break;
         default:
             alert("Unknown Event! Please see console.");
 

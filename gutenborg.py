@@ -47,14 +47,14 @@ class Gutenborg:
         elif user in self.dead_users:
             # User is in the dead list. Remove him from the dead list
             # and add him to the active list.
+            self.send_event({"type": "returning_user", "user": user.get_state()})
             self.dead_users.remove(user)
             self.active_users.append(user)
-            self.send_event({"type": "returning_user", "user": user.get_state()})
         else:
             # Not in the active list, not in the dead list...
             # Must be a new one!
-            self.active_users.append(user)
             self.send_event({"type": "new_user", "user": user.get_state()})
+            self.active_users.append(user)
     
     def disconnect_user(self, user, reason):
         """
