@@ -55,7 +55,7 @@ class Root:
         cherrypy.session.acquire_lock()
         
         assert not self.is_logged_in(), "This session already has a logged in user."
-        assert 'name' in args and 'color' in args, "Bad request."
+        assert 'name' in args and 'color' in args, "Bad request. Args: " + repr(args)
         cherrypy.session['user'] = User(self.gb, args['name'], args['color'])
         try:
             self.gb.add_user(cherrypy.session['user'])
@@ -141,6 +141,6 @@ conf = {'/': {
 'tools.staticdir.dir': 'web',
 'response.stream' : True
 }}
-pageroot = Root("Development server", "Caution: May Explode")
+pageroot = Root("Gutenborg development server", "Caution: May Explode")
 cherrypy.quickstart(pageroot, '/', conf)
 
