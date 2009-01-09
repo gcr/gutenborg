@@ -80,6 +80,7 @@ class Root:
         """
         Returns a JSON object containing lots of server information
         """
+        # TODO: Add document information
         cherrypy.session.acquire_lock()
         cherrypy.response.headers['Content-Type'] = 'text/json'
         response = {}
