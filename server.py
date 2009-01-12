@@ -80,7 +80,6 @@ class Root:
         """
         Returns a JSON object containing lots of server information
         """
-        # TODO: Add document information
         cherrypy.session.acquire_lock()
         cherrypy.response.headers['Content-Type'] = 'text/json'
         response = {}
@@ -88,10 +87,13 @@ class Root:
         response['tag'] = self.gb.tagline
         response['active_users'] = []
         response['dead_users'] = []
+        response['documents'] = []
         for u in self.gb.active_users[:]:
             response['active_users'].append(u.get_state())
         for u in self.gb.dead_users[:]:
             response['dead_users'].append(u.get_state())
+        for d in self.gb.documents[:]:
+            response['documents'].append(d.name)
         
         # Are we logged in?
         if self.is_logged_in():
