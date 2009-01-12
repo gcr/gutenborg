@@ -1,3 +1,4 @@
+from user import get_state
 #       gutenborg.py
 #
 #       Copyright 2008 Michael James Wilber <michael@northbound>
@@ -26,9 +27,24 @@ class Document:
         self.content = []
         self.subscribed_users = []
 
+    def send_event(self, event):
+        """
+        Sends an event to every subscribed user
+        """
+        print "[[" + self.name + "]] " + repr(event)
+        # Send the document name along with it
+        event["doc_name"] = self.name
+        for u in self.subscribed_users:
+            u.add_event(event)
+
     def subscribe_user(self, user):
         """
         Adds a user to the document's subscribed users list.
         """
-        self.subscribe_users.append(user)
+        self.subscribed_users.append(user)
+        self.send_event({"type": "subscribed_user", "user":user.get_state()})
+
+    def unsubscribe_user(self, user):
+        self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
+        self.subscribed_user.remove(user)
 
