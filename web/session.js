@@ -117,7 +117,7 @@ session.login = function(name, color){
 }
 
 session.subscribeToDoc = function(d) {
-    alert(d);
+    $.get("subscribe_document", {"doc_name": d});
 }
 
 session.new_user = function(u) {

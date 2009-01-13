@@ -108,9 +108,11 @@ pagehandler.drawDocList = function(docs) {
        
        // Add a click handler that subscribes to the document when
        // you click on it.
-       $(newitem).click(function() {
-           session.subscribeToDoc(d);
-       })
+       if (session.logged_in) {
+           $(newitem).click(function() {
+               session.subscribeToDoc(d);
+           })
+       }
     });
 }
 
