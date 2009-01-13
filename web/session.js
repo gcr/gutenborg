@@ -103,12 +103,12 @@ session.handleEvent = function(event) {
             break;
         default:
             alert("Unknown Event! Please see console.");
-
     }
 }
 
 session.sendEvent = function(event) {
-    // Sends a new event to all users. NOTE: This should be serialized.
+    // Sends a new message event to all users. NOTE: This should be serialized.
+    // TODO: Take it out! We're not doing messages anymore.'
     if (session.logged_in) {
         $.getJSON("new", {message: event});
     }
