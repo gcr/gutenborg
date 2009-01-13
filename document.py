@@ -1,4 +1,3 @@
-from user import get_state
 #       gutenborg.py
 #
 #       Copyright 2008 Michael James Wilber <michael@northbound>
@@ -27,6 +26,17 @@ class Document:
         self.content = []
         self.subscribed_users = []
 
+    def __str__(self):
+        return "<(Document) Name: " + self.name + ">"
+
+    def __eq__(self, d):
+        """ Returns true if one document is equal to another. (This only
+        depends on the document name.) """
+        if self.name.lower() == d.name.lower():
+            return True
+        else:
+            return False
+
     def send_event(self, event):
         """
         Sends an event to every subscribed user
@@ -45,6 +55,10 @@ class Document:
         self.send_event({"type": "subscribed_user", "user":user.get_state()})
 
     def unsubscribe_user(self, user):
-        self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
-        self.subscribed_user.remove(user)
+        """
+        Removes a user from the document's subscribed users list.
+        """
+        if user in self.subscribed_users:
+            self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
+            self.subscribed_user.remove(user)
 

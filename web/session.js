@@ -74,7 +74,6 @@ session.waitForEvents = function() {
 
 session.handleEvent = function(event) {
     // When we get an event, this function describes what to do with it.
-    // TODO: Gotta change this up.
     switch (event.type) {
         case "returning_user":
             session.returning_user(event.user);
@@ -86,9 +85,11 @@ session.handleEvent = function(event) {
             session.disconnect_user(event.user);
             break;
         case "user_color_change":
+            // TODO: Implement
             alert ("User changed his color: " + event.name + ", new color: " + event.newcolor);
             break;
         case "user_name_change":
+            // TODO: Implement
             alert ("User changed his name: " + event.oldname + ", new name: " + event.newname);
             break;
         case "message":

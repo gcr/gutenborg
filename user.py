@@ -69,7 +69,10 @@ class User:
         response = self.history[last:]
         if len(response) == 0:
             # We aren't returning anything! Better wait for something.
+            # NOTE: To change the wait timeout, simply change this
+            # value.
             self.eventAdded.wait(10)
+
             # If we have something, clear the event. If we don't,
             # we clear it anyway.
             self.eventAdded.clear()
