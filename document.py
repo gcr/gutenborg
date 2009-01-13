@@ -23,7 +23,7 @@ class Document:
         self.name = name
         self.gutenborg = gutenborg
         self.author = author
-        self.content = []
+        self.content = [] # Stored like this: [{"text": String, "author": User}, ...]
         self.subscribed_users = []
 
     def __str__(self):
