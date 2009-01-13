@@ -44,6 +44,7 @@ session.getServerInfo = function(callback) {
         session.servertag = data.tag;
         session.active_users = data.active_users;
         session.dead_users = data.dead_users;
+        session.documents = data.documents;
         if (data.logged_in_username) {
             // Are we logged in?
             session.logged_in = true;
@@ -113,6 +114,10 @@ session.login = function(name, color){
     $.get("login", {"name": name, "color": color}, function() {
         session.init();
     });
+}
+
+session.subscribeToDoc = function(d) {
+    alert(d);
 }
 
 session.new_user = function(u) {

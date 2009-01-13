@@ -27,8 +27,10 @@ pagehandler.init = function() {
     $(".sname").text(session.servername);
     $(".stag").text(session.servertag);
 
-    // Draws the userlist
+    // Draws the userlist and the doclist
     pagehandler.drawUserList(session.active_users, "online");
+    pagehandler.drawDocList(session.documents);
+
     // This code was originally in session.init(). I decided to
     // move it here because even though it involves the choice of whether
     // a user is logged in, it seems more like a GUI issue.
@@ -87,11 +89,28 @@ pagehandler.drawMessageSubmitBox = function() {
 }
 
 pagehandler.drawUserList = function(users, cssclass) {
-    // This function empties the user list.
+    // This function empties the user list. It then fills up the list
+    // full of our users.
     $(".userlist").empty();
     $.each(users, function(index, u) {
        var newitem = $("<li class='" + cssclass + "'></li>").text(u.name);
        $(newitem).appendTo(".userlist");
+    });
+}
+
+pagehandler.drawDocList = function(docs) {
+    // This function empties the document list. It then fills up the list
+    // full of our documents.
+    $(".doclist").empty();
+    $.each(docs, function(index, d) {
+       var newitem = $("<li></li>").text(d);
+       $(newitem).appendTo(".doclist");
+       
+       // Add a click handler that subscribes to the document when
+       // you click on it.
+       $(newitem).click(function() {
+           session.subscribeToDoc(d);
+       })
     });
 }
 

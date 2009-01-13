@@ -22,16 +22,27 @@ h2 {
     border-left: solid 3px navy;
     padding-left: 8px;
 }
-
 .userlistbox h3 {
     margin-bottom: 0px;
 }
-
 .userlistbox ul {
     margin-top: 0px;
 }
 .userlist .online {
     list-style-image: url('img/status/online.png');
     font-weight: bold;
-    
+}
+.doclistbox {
+    border-left: solid 3px navy;
+    padding-left: 8px;
+}
+.doclistbox h3 {
+    margin-bottom: 0px;
+}
+.doclistbox ul {
+    margin-top: 0px;
+}
+.doclist li {
+    list-style-image: url('img/gnome-mime-text.png');
+    font-weight: bold;
 }
