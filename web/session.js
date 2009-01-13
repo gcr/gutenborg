@@ -75,6 +75,19 @@ session.waitForEvents = function() {
 
 session.handleEvent = function(event) {
     // When we get an event, this function describes what to do with it.
+    // Each event has its own session function, like this: session.new_user, etc.
+    /*
+     * EVENT LIST
+     * user_name_change     TODO
+     * user_color_change    TODO
+     * message              TODO- Please remove
+     * returning_user
+     * new_user
+     * disconnected_user
+     * new_document         TODO
+     * subscribed_user      TODO
+     * unsubscribed_user    TODO
+     */
     switch (event.type) {
         case "returning_user":
             session.returning_user(event.user);
@@ -84,14 +97,6 @@ session.handleEvent = function(event) {
             break;
         case "disconnected_user":
             session.disconnect_user(event.user);
-            break;
-        case "user_color_change":
-            // TODO: Implement
-            alert ("User changed his color: " + event.name + ", new color: " + event.newcolor);
-            break;
-        case "user_name_change":
-            // TODO: Implement
-            alert ("User changed his name: " + event.oldname + ", new name: " + event.newname);
             break;
         case "message":
             $("<div class='message'></div>").text(event.username + ": " + event.message).appendTo(".responseholder").hide().show("slow");
