@@ -30,7 +30,9 @@ class Root:
     def __init__(self, name, tagline):
         self.gb = Gutenborg(name, tagline)
         
-        # Some server test things. Don't need anymore.
+        # Some server test things.
+        self.DocTest = Document(self.gb, "Doc1", "")
+        self.gb.add_document(self.DocTest)
 #        self.u = User(self.gb, "Mike", "Blue")
 #        self.me = User(self.gb, "Becca", "Red")
 #        self.gb.add_user(self.u)
