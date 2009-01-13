@@ -80,7 +80,17 @@ class Gutenborg:
         """
         for u in self.active_users:
             u.try_timeout(gracetime)
-            
+
+    def get_document_by_name(self, dname):
+        """
+        Given a document name, return the corresponding document object
+        that our Gutenborg instance knows about
+        """
+        for d in self.documents:
+            if d.name == dname:
+                return d
+        raise NameError, "Document '" + dname + "' does not exist"
+
     def add_document(self, document):
         """
         This function registers a new document with the server.

@@ -61,4 +61,5 @@ class Document:
         if user in self.subscribed_users:
             self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
             self.subscribed_user.remove(user)
+            
 
