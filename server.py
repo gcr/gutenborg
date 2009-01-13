@@ -24,6 +24,7 @@ import sys
 import os
 from gutenborg import Gutenborg
 from user import User
+from document import Document
 
 class Root:
     def __init__(self, name, tagline):
@@ -124,6 +125,21 @@ class Root:
         return user.get_events(int(args['last']))
         
     wait.exposed = True
+
+    def subscribe_document(self, **args):
+        """
+        Adds a user to a document
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args, "Document name required"
+
+        user = cherrypy.session['user']
+        # Get our document object
+        d = self.gb.get_document_by_name(args['doc_name']);
+        d.subscribe_user(user);
+    subscribe_document.exposed = True
+
     
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")
