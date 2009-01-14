@@ -109,14 +109,6 @@ session.handleEvent = function(event) {
     }
 }
 
-/*session.sendEvent = function(event) {
-    // Sends a new message event to all users. NOTE: This should be serialized.
-    // TODO: Take it out! We're not doing messages anymore.'
-    if (session.logged_in) {
-        $.getJSON("new", {message: event});
-    }
-}*/
-
 session.login = function(name, color){
     // This method logs us in and then resets the session.
     $.get("login", {"name": name, "color": color}, function() {
