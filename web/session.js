@@ -98,6 +98,7 @@ session.handleEvent = function(event) {
             session.returning_user(event.user);
             break;
         case "new_user":
+            // TODO: Make this ignore me like subscribed_user does.
             session.new_user(event.user);
             break;
         case "disconnected_user":
@@ -111,7 +112,7 @@ session.handleEvent = function(event) {
             }
             break;
         default:
-            alert("Unknown Event! Please see console.");
+            alert("TODO: Unknown Event! Please see console.");
     }
 }
 
@@ -123,7 +124,9 @@ session.login = function(name, color){
 }
 
 session.subscribeToDoc = function(d) {
-    // Sends a subscribe request ONLY if we're not part of a document.'
+    // Sends a subscribe request ONLY if we're not part of a document.
+    // When our subscription event has been recieved, we'll handle it in
+    // session.subscribed_user_myself
     if (session.subscribed_docs[d] == undefined) {
         $.get("subscribe_document", {"doc_name": d});
     }
@@ -175,7 +178,7 @@ session.returning_user = function(returningUser) {
 }
 
 session.subscribed_user_myself = function(event) {
-    // Without knowing it, we've been subscribed to a document.
+    // Without knowing it, we've been subscribed to a document. We'll create
+    // a new document object and add ourselves.
     session.subscribed_docs[event.doc_name] = new gbDocument(event.doc_name);
-    console.log(event);
 }
