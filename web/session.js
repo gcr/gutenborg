@@ -101,9 +101,13 @@ session.handleEvent = function(event) {
         case "disconnected_user":
             session.disconnect_user(event.user);
             break;
-//        case "message":
-//            $("<div class='message'></div>").text(event.username + ": " + event.message).appendTo(".responseholder").hide().show("slow");
-//            break;
+        case "subscribed_user":
+            if (event.user.name == session.myname) {
+                alert("We're subscribed!");
+            } else {
+                alert("TODO: Someone else is subscribed!");
+            }
+            break;
         default:
             alert("Unknown Event! Please see console.");
     }
