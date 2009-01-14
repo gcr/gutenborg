@@ -30,10 +30,7 @@ session.init = function() {
     session.getServerInfo(function() {
         // This is a callback. It should be executed after the server
         // information is gotten.
-        /*if (session.logged_in) {
-            // Unsubscribe me from every document
-            $.get("unsubscribe_all");
-        }*/
+
         pagehandler.init(); // Begin drawing the page
         session.waitForEvents();
     });

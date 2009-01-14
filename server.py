@@ -165,15 +165,6 @@ class Root:
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")
     index.exposed = True
-    
-    def unsubscribe_all(self, **args):
-        """
-        This function unsubscribes me from every single document ever
-        """
-        assert self.is_logged_in(), "User is not logged in"
-        for d in self.gb.documents:
-            d.unsubscribe_user(cherrypy.session['user'])
-    unsubscribe_all.exposed = True
 
 cherrypy.config.update({
 'server.socket_port': 8000,
