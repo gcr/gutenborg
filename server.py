@@ -139,6 +139,20 @@ class Root:
         d.subscribe_user(user);
     subscribe_document.exposed = True
 
+    def unsubscribe_document(self, **args):
+        """
+        Causes a user to leave the document.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args, "Document name required"
+
+        user = cherrypy.session['user']
+        # Get our document object
+        d = self.gb.get_document_by_name(args['doc_name'])
+        d.unsubscribe_user(user);
+    unsubscribe_document.exposed = True
+
     def resync_doc(self, **args):
         """
         Sends the entire document state as a resync_doc event to the user
