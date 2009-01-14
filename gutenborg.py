@@ -41,6 +41,12 @@ class Gutenborg:
         """
         Creates a new user and adds him to the active user list.
         """
+
+        # TODO: In each document, returning users' colors are all wacko. Fix by
+        # going through each chunk in each document and setting the author to user.
+        
+        # TODO: Also fix this in the client.
+
         if user in self.active_users:
             # User is already logged in, do nothing.
             raise NameError, "User already exists in active user list"

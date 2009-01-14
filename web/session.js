@@ -83,11 +83,11 @@ session.handleEvent = function(event) {
      *      Global:
      * user_name_change     TODO
      * user_color_change    TODO
-     * returning_user
+     * returning_user       TODO-Be sure to handle document colors correctly!
      * new_user
      * disconnected_user
      * new_document         TODO
-     * subscribed_user      TODO
+     * subscribed_user      TODO-Be sure to handle returning users' doc colors.
      * unsubscribed_user    TODO
      *
      *      Documents:
