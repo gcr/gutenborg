@@ -139,15 +139,29 @@ class Root:
         d.subscribe_user(user);
     subscribe_document.exposed = True
 
-    def get_document_state(self, **args):
+    def resync_doc(self, **args):
         """
-        Gets the document's contents and userlist. Note that the requester does not need
-        to be logged in.
+        Sends the entire document state as a resync_doc event to the user
         """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
         assert "doc_name" in args, "Document name required"
+        
+        user = cherrypy.session['user']
+        # Get our document object
         d = self.gb.get_document_by_name(args['doc_name'])
-        return json.write(d.get_state())
-    get_document_state.exposed = True
+        d.resync(user);
+    resync_doc.exposed = True
+    # CONSIDERED HARMFUL! Use resync_doc() instead.
+    #def get_document_state(self, **args):
+    #    """
+    #    Gets the document's contents and userlist. Note that the requester does not need
+    #    to be logged in.
+    #    """
+    #    assert "doc_name" in args, "Document name required"
+    #    d = self.gb.get_document_by_name(args['doc_name'])
+    #    return json.write(d.get_state())
+    #get_document_state.exposed = True
 
     def new_chunk(self, **args):
         """

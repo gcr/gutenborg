@@ -89,6 +89,7 @@ session.handleEvent = function(event) {
      * new_document         TODO
      * subscribed_user      TODO-Be sure to handle returning users' doc colors.
      * unsubscribed_user    TODO
+     * resync_doc           TODO
      *
      *      Documents:
      * new_chunk            TODO

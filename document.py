@@ -67,6 +67,8 @@ class Document:
     def get_state(self):
         """
         Gets the contents of the document in an easily parsable form.
+        DO NOT USE DIRECTLY unless you know what you're doing! Use the resync
+        event instead.
         """
         r = {}
         r['users'] = []
@@ -76,6 +78,21 @@ class Document:
         for chunk in self.content:
             r['content'].append({"text": chunk['text'], "author":chunk['author'].get_state()})
         return r
+
+    def resync(self, user):
+        """
+        Sends an event to the user with the state of the document
+        """
+
+        e = self.get_state()
+        # We could use self.send_event, but that would force EVERYONE to resync.
+        # So, I'll just do it myself.
+        # Send the document name too (a la self.send_event)
+        e['doc_name'] = self.name
+        # Send what type of event this is
+        e['type'] = "resync_doc"
+        # And away she goes!
+        user.add_event(e)
 
     def new_chunk(self, user, text, position):
         """
