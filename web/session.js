@@ -113,6 +113,9 @@ session.handleEvent = function(event) {
                 alert("TODO: Someone else is subscribed!");
             }
             break;
+        case "resync_doc":
+            session.subscribed_docs[event.doc_name].parse_resync_event(event);
+            break;
         default:
             alert("TODO: Unknown Event! Please see console.");
     }

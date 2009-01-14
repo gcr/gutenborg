@@ -82,6 +82,7 @@ class Root:
     logout.exposed = True
     
     def info(self, **args):
+        # TODO: We must make this an event!
         """
         Returns a JSON object containing lots of server information
         """

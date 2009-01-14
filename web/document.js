@@ -25,14 +25,16 @@ function gbDocument(docname) {
     
 
     this.resync = function(callback) {
-        // Resyncs the document, then executes a callback. Inside the
-        // callback, "this" refers to this document object. Pretty sweet, no?
-        callback.call(this);
+        // Resyncs the document
+        $.get("resync_doc", {"doc_name":this.name});
+    }
+
+    this.parse_resync_event = function(data) {
+        console.log(data);
     }
 
 
     // What we want to do:
-    this.resync(function() {
-        pagehandler.drawNewDoc(this, "open", $(".tablist"));
-    });
+    this.resync();
+    pagehandler.drawNewDoc(this, "open", $(".tablist"));
 }
