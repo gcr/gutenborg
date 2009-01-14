@@ -32,7 +32,9 @@ class Root:
         
         # Some server test things.
         self.DocTest = Document(self.gb, "Doc1", "")
+        self.DocTwo = Document(self.gb, "Test Document 2", "")
         self.gb.add_document(self.DocTest)
+        self.gb.add_document(self.DocTwo)
         self.u = User(self.gb, "Mike", "Blue")
         self.DocTest.new_chunk(self.u, "Testing", 0)
 #        self.u = User(self.gb, "Mike", "Blue")

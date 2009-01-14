@@ -32,7 +32,6 @@ function gbDocument(docname) {
 
     this.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
-        // TODO: Draw the user list
         // TODO: Draw the document chunks
         this.users = data.users; // Copy users
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
@@ -40,6 +39,20 @@ function gbDocument(docname) {
         //console.log(data);
     }
 
+    this.subscribed_user = function(u) {
+        // This gets called when we have another user coming up.
+        // TODO: Make sure this function applies colors to the document correctly!
+        // Only add the user if there isn't one already.
+        var match = false;
+        $.each(this.users, function(index, user) {
+            if (u.name == user.name) {match = true;}
+        });
+        if (!match) {
+            // If we haven't found one, add him!
+            this.users.push(u);
+            pagehandler.drawNewUser(u, "user", this.jqulist);
+        }
+    }
 
     // What we want to do the first time we start up
     this.resync();
