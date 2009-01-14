@@ -61,5 +61,10 @@ class Document:
         if user in self.subscribed_users:
             self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
             self.subscribed_user.remove(user)
-            
+
+    def new_chunk(self, user, text, position):
+        """
+        Appends the text to the chunk at the position'th place
+        """
+        self.content.insert(position, {"author":user, "text":text})
 
