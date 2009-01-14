@@ -129,10 +129,15 @@ class Root:
 
         user = cherrypy.session['user']
         # Get our document object
-        d = self.gb.get_document_by_name(args['doc_name']);
+        d = self.gb.get_document_by_name(args['doc_name'])
         d.subscribe_user(user);
     subscribe_document.exposed = True
 
+    def get_document_contents(self, **args):
+        assert "doc_name" in args, "Document name required"
+        d = self.gb.get_document_by_name(args['doc_name'])
+        return json.write(d.get_contents())
+    get_document_contents.exposed = True
     
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")

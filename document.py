@@ -62,6 +62,15 @@ class Document:
             self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
             self.subscribed_user.remove(user)
 
+    def get_contents(self):
+        """
+        Gets the contents of the document in an easily parsable form.
+        """
+        r = []
+        for chunk in self.content:
+            r.append({"text": chunk['text'], "author":chunk['author'].get_state()})
+        return r
+
     def new_chunk(self, user, text, position):
         """
         Appends the text to the chunk at the position'th place
