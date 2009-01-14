@@ -28,7 +28,7 @@ pagehandler.init = function() {
     $(".stag").text(session.servertag);
 
     // Draws the userlist and the doclist
-    pagehandler.drawUserList(session.active_users, "online");
+    pagehandler.drawUserList(session.active_users,"online", $(".userlist"));
     pagehandler.drawDocList(session.document_list);
 
     // This code was originally in session.init(). I decided to
@@ -88,13 +88,13 @@ pagehandler.drawLoginForm = function() {
     });
 }*/
 
-pagehandler.drawUserList = function(users, cssclass) {
+pagehandler.drawUserList = function(users, cssclass, ulist) {
     // This function empties the user list. It then fills up the list
     // full of our users.
-    $(".userlist").empty();
+    ulist.empty();
     $.each(users, function(index, u) {
        var newitem = $("<li class='" + cssclass + "'></li>").text(u.name);
-       $(newitem).appendTo(".userlist");
+       $(newitem).appendTo(ulist);
     });
 }
 
@@ -116,14 +116,14 @@ pagehandler.drawDocList = function(docs) {
     });
 }
 
-pagehandler.drawNewUser = function(user, cssclass) {
+pagehandler.drawNewUser = function(user, cssclass, ulist) {
     // Draws a new user at the bottom of the list
     var newitem = $("<li class='"+cssclass+"'></li>").text(user.name);
-    $(newitem).appendTo(".userlist").hide().fadeIn("slow");
+    $(newitem).appendTo(ulist).hide().fadeIn("slow");
 }
 
-pagehandler.removeUser = function(user, cssclass) {
-    $(".userlist li").each(function(index, u){
+pagehandler.removeUser = function(user, list) {
+    list.find("li").each(function(index, u){
         if ($(u).text() == user.name) {
              $(this).fadeOut("slow", function(){$(this).remove();});
         }

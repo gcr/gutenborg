@@ -83,7 +83,7 @@ session.handleEvent = function(event) {
      *      Global:
      * user_name_change     TODO
      * user_color_change    TODO
-     * returning_user       TODO-Be sure to handle document colors correctly!
+     * returning_user
      * new_user
      * disconnected_user
      * new_document         TODO
@@ -96,6 +96,7 @@ session.handleEvent = function(event) {
      */
     switch (event.type) {
         case "returning_user":
+            // TODO: Make this event handle document colors!
             session.new_user(event.user);
             break;
         case "new_user":
@@ -141,7 +142,7 @@ session.new_user = function(u) {
     });
     if (!match) {
         session.active_users.push(u);
-        pagehandler.drawNewUser(u, "online");
+        pagehandler.drawNewUser(u, "online", $(".userlist"));
     }
 }
 
@@ -156,7 +157,7 @@ session.disconnect_user = function(leavingUser) {
         if (u.name == leavingUser.name) {
             numUsers--; // Decrease the number of users left to search
             session.active_users.splice(i,1); // Remove this user
-            pagehandler.removeUser(leavingUser, "online"); // Un-draw this user
+            pagehandler.removeUser(leavingUser, $(".userlist")); // Un-draw this user
             //session.dead_users.push(leavingUser); // Add this user to the dead list
         }
     }
