@@ -30,6 +30,10 @@ session.init = function() {
     session.getServerInfo(function() {
         // This is a callback. It should be executed after the server
         // information is gotten.
+        /*if (session.logged_in) {
+            // Unsubscribe me from every document
+            $.get("unsubscribe_all");
+        }*/
         pagehandler.init(); // Begin drawing the page
         session.waitForEvents();
     });
@@ -44,7 +48,8 @@ session.getServerInfo = function(callback) {
         session.servertag = data.tag;
         session.active_users = data.active_users;
         session.dead_users = data.dead_users;
-        session.documents = data.documents;
+        session.document_list = data.documents;
+        session.subscribed_docs = {};
         if (data.logged_in_username) {
             // Are we logged in?
             session.logged_in = true;
@@ -103,7 +108,7 @@ session.handleEvent = function(event) {
             break;
         case "subscribed_user":
             if (event.user.name == session.myname) {
-                alert("We're subscribed!");
+                session.subscribed_user_myself(event);
             } else {
                 alert("TODO: Someone else is subscribed!");
             }
@@ -121,7 +126,10 @@ session.login = function(name, color){
 }
 
 session.subscribeToDoc = function(d) {
-    $.get("subscribe_document", {"doc_name": d});
+    // Sends a subscribe request ONLY if we're not part of a document.'
+    if (session.subscribed_docs[d] == undefined) {
+        $.get("subscribe_document", {"doc_name": d});
+    }
 }
 
 session.new_user = function(u) {
@@ -167,4 +175,10 @@ session.returning_user = function(returningUser) {
             session.active_users.push(returningUser); // Add this user to the active list
         }
     }
+}
+
+session.subscribed_user_myself = function(event) {
+    // Without knowing it, we've been subscribed to a document.
+    session.subscribed_docs[event.doc_name] = new gbDocument(event.doc_name);
+    console.log(event);
 }

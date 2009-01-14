@@ -139,15 +139,15 @@ class Root:
         d.subscribe_user(user);
     subscribe_document.exposed = True
 
-    def get_document_contents(self, **args):
+    def get_document_state(self, **args):
         """
-        Gets the document's contents. Note that the requester does not need
+        Gets the document's contents and userlist. Note that the requester does not need
         to be logged in.
         """
         assert "doc_name" in args, "Document name required"
         d = self.gb.get_document_by_name(args['doc_name'])
-        return json.write(d.get_contents())
-    get_document_contents.exposed = True
+        return json.write(d.get_state())
+    get_document_state.exposed = True
 
     def new_chunk(self, **args):
         """
@@ -166,7 +166,14 @@ class Root:
         raise cherrypy.InternalRedirect("gb.htm")
     index.exposed = True
     
-    
+    def unsubscribe_all(self, **args):
+        """
+        This function unsubscribes me from every single document ever
+        """
+        assert self.is_logged_in(), "User is not logged in"
+        for d in self.gb.documents:
+            d.unsubscribe_user(cherrypy.session['user'])
+    unsubscribe_all.exposed = True
 
 cherrypy.config.update({
 'server.socket_port': 8000,

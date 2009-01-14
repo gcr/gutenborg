@@ -51,6 +51,8 @@ class Document:
         """
         Adds a user to the document's subscribed users list.
         """
+        if user in self.subscribed_users:
+            raise NameError, "This user is already subscribed to that document."
         self.subscribed_users.append(user)
         self.send_event({"type": "subscribed_user", "user":user.get_state()})
 
@@ -60,15 +62,19 @@ class Document:
         """
         if user in self.subscribed_users:
             self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
-            self.subscribed_user.remove(user)
+            self.subscribed_users.remove(user)
 
-    def get_contents(self):
+    def get_state(self):
         """
         Gets the contents of the document in an easily parsable form.
         """
-        r = []
+        r = {}
+        r['users'] = []
+        for u in self.subscribed_users:
+            r['users'].append(u.get_state())
+        r['content'] = []
         for chunk in self.content:
-            r.append({"text": chunk['text'], "author":chunk['author'].get_state()})
+            r['content'].append({"text": chunk['text'], "author":chunk['author'].get_state()})
         return r
 
     def new_chunk(self, user, text, position):

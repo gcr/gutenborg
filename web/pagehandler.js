@@ -29,7 +29,7 @@ pagehandler.init = function() {
 
     // Draws the userlist and the doclist
     pagehandler.drawUserList(session.active_users, "online");
-    pagehandler.drawDocList(session.documents);
+    pagehandler.drawDocList(session.document_list);
 
     // This code was originally in session.init(). I decided to
     // move it here because even though it involves the choice of whether
