@@ -57,12 +57,14 @@ pagehandler.drawLoginForm = function() {
         $("form", loginform).submit(function (event) {
             uname = $("#uname").val();
             ucolor = $("#ucolor").val();
-            
-            // Login with our session object
-            session.login(uname, ucolor);
-            // Clean up when we're done
-            // We can access loginform because of closures.
-            $(loginform).fadeOut("slow", function() {$(this).remove();});
+
+            if (uname != "" && ucolor.length == 7) {
+                // Login with our session object
+                session.login(uname, ucolor);
+                // Clean up when we're done
+                // We can access loginform because of closures.
+                $(loginform).fadeOut("slow", function() {$(this).remove();});
+            }
             return false;
         });        
     }
