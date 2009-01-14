@@ -47,10 +47,12 @@ pagehandler.drawLoginForm = function() {
         loginform.html("<b>You are not logged in!</b><br />");
         loginform.append("<form id='loginform'>"
             + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
-            //+ "<tr><td>Color:</td><td><input id='ucolor' type='text' /></td></tr>"
+            + "<tr><td>Color:</td><td><div id='colorpicker' /><input type='text' id='ucolor' value='#FF0000'/></td></tr>"
             + "<tr><td colspan=2><input type='submit' val='Log in' /></td></tr></table>"
             + "</form>");
-            
+        // Assign a colorpicker
+        var c = $.farbtastic("#colorpicker")
+        c.linkTo("#ucolor")
         // Now that we got our form, what do we do with it?
         $("form", loginform).submit(function (event) {
             uname = $("#uname").val();
