@@ -28,8 +28,8 @@ pagehandler.init = function() {
     $(".stag").text(session.servertag);
 
     // Draws the userlist and the doclist
-    pagehandler.drawUserList(session.active_users,"online", $(".userlist"));
-    pagehandler.drawDocList(session.document_list);
+    //pagehandler.drawUserList(session.active_users,"online", $(".userlist"));
+    pagehandler.drawAllDocs(session.document_list);
 
     // This code was originally in session.init(). I decided to
     // move it here because even though it involves the choice of whether
@@ -72,22 +72,6 @@ pagehandler.drawLoginForm = function() {
     }
 }
 
-/*pagehandler.drawMessageSubmitBox = function() {
-    // This function draws a small message box where you can
-    // say something if you'd like.
-    boxform = $("<div class='messagesubmit'></div>").appendTo(".messagewriter");
-    boxform.append("<form id='loginform'>"
-            + "<input id='message' type='text' />"
-            + "<input type='submit' value='Send' /> <a href='logout'>Logout</a></form>");
-    $("form", boxform).submit(function(event) {
-        message = $("#message").val();
-        session.sendEvent(message);
-        $("#message").val("");
-        
-        return false;
-    });
-}*/
-
 pagehandler.drawUserList = function(users, cssclass, ulist) {
     // This function empties the user list. It then fills up the list
     // full of our users.
@@ -98,13 +82,13 @@ pagehandler.drawUserList = function(users, cssclass, ulist) {
     });
 }
 
-pagehandler.drawDocList = function(docs) {
+pagehandler.drawAllDocs = function(docs) {
     // This function empties the document list. It then fills up the list
-    // full of our documents.
+    // full of possible documents.
     $(".doclist").empty();
     $.each(docs, function(index, d) {
        var newitem = $("<li></li>").text(d);
-       $(newitem).appendTo(".doclist");
+       $(newitem).appendTo(".alldocs");
        
        // Add a click handler that subscribes to the document when
        // you click on it.
@@ -128,4 +112,12 @@ pagehandler.removeUser = function(user, list) {
              $(this).fadeOut("slow", function(){$(this).remove();});
         }
     });
+}
+
+pagehandler.drawNewDoc = function(user, cssclass, dlist) {
+    // When we've been subscribed to a document, this function
+    // draws the little document block to the bottom of our document
+    // tabs.
+    var newitem = $("<li class='"+cssclass+"'></li>").text(user.name);
+    $(newitem).appendTo(dlist).hide().fadeIn("slow");
 }

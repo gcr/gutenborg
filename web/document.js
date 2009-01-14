@@ -21,5 +21,7 @@
 
 function gbDocument(docname) {
     this.name = docname;
-    alert("I've been subscribed!");
+    this.doalert = function() {
+        alert(this.name);
+    }
 }

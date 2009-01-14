@@ -167,4 +167,5 @@ session.subscribed_user_myself = function(event) {
     // Without knowing it, we've been subscribed to a document. We'll create
     // a new document object and add ourselves.
     session.subscribed_docs[event.doc_name] = new gbDocument(event.doc_name);
+    session.subscribed_docs[event.doc_name].doalert();
 }
