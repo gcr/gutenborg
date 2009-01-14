@@ -44,7 +44,7 @@ session.getServerInfo = function(callback) {
         document.title = data.name; // Set the window title. Nice effect.
         session.servertag = data.tag;
         session.active_users = data.active_users;
-        session.dead_users = data.dead_users;
+        //session.dead_users = data.dead_users; // I don't need to care, do I?'
         session.document_list = data.documents;
         session.subscribed_docs = {};
         if (data.logged_in_username) {
@@ -96,7 +96,7 @@ session.handleEvent = function(event) {
      */
     switch (event.type) {
         case "returning_user":
-            session.returning_user(event.user);
+            session.new_user(event.user);
             break;
         case "new_user":
             // TODO: Make this ignore me like subscribed_user does.
@@ -157,23 +157,7 @@ session.disconnect_user = function(leavingUser) {
             numUsers--; // Decrease the number of users left to search
             session.active_users.splice(i,1); // Remove this user
             pagehandler.removeUser(leavingUser, "online"); // Un-draw this user
-            session.dead_users.push(leavingUser); // Add this user to the dead list
-        }
-    }
-}
-
-session.returning_user = function(returningUser) {
-    // This function removes users from the dead list and puts them
-    // on the active list. Note that this only affects the client.
-
-    var numUsers = session.dead_users.length;
-    for (var i=0; i<numUsers; i++) {
-        u = session.dead_users[i];
-        if (u.name == returningUser.name) {
-            numUsers--; // Decrease the number of users left to search
-            session.dead_users.splice(i,1); // Remove this user from the dead_list
-            pagehandler.drawNewUser(returningUser, "online") // Un-draw this user
-            session.active_users.push(returningUser); // Add this user to the active list
+            //session.dead_users.push(leavingUser); // Add this user to the dead list
         }
     }
 }
