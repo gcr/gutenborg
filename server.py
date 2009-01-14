@@ -73,7 +73,7 @@ class Root:
         Logs a user out
         """
         cherrypy.session.acquire_lock()
-        assert self.is_logged_in(), "User not logged in"
+        assert self.is_logged_in(), "User not logged in, no need to logout."
         self.gb.disconnect_user(cherrypy.session['user'], "logout")
         del cherrypy.session['user']
         raise cherrypy.HTTPRedirect("/")
@@ -134,10 +134,27 @@ class Root:
     subscribe_document.exposed = True
 
     def get_document_contents(self, **args):
+        """
+        Gets the document's contents. Note that the requester does not need
+        to be logged in.
+        """
         assert "doc_name" in args, "Document name required"
         d = self.gb.get_document_by_name(args['doc_name'])
         return json.write(d.get_contents())
     get_document_contents.exposed = True
+
+    def new_chunk(self, **args):
+        """
+        Adds a new chunk by the user into a certain document. The user
+        does not need to be subscribed to said document.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args and "position" in args and "text" in args, "Bad request- please supply document name, position, and text."
+        
+        d = self.gb.get_document_by_name(args['doc_name'])
+        d.new_chunk(cherrypy.session['user'], args['position'], args['text'])
+    new_chunk.exposed = True
     
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")

@@ -75,5 +75,8 @@ class Document:
         """
         Appends the text to the chunk at the position'th place
         """
+        # Insert the text
         self.content.insert(position, {"author":user, "text":text})
+        # Let everyone else know
+        self.send_event({"type": "new_chunk", "author": user.get_state(), "position": position, "text": text})
 
