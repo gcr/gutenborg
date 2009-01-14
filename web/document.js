@@ -20,9 +20,19 @@
 // This script handles subscribed documents and what to do with them.
 
 function gbDocument(docname) {
+    // This creates a new document then subscribes us to it.
     this.name = docname;
     
-    
+
+    this.resync = function(callback) {
+        // Resyncs the document, then executes a callback. Inside the
+        // callback, "this" refers to this document object. Pretty sweet, no?
+        callback.call(this);
+    }
+
+
     // What we want to do:
-    pagehandler.drawNewDoc(this, "open", $(".tablist"));
+    this.resync(function() {
+        pagehandler.drawNewDoc(this, "open", $(".tablist"));
+    });
 }
