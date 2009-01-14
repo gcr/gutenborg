@@ -23,7 +23,8 @@ function gbDocument(docname) {
     // This creates a new document then subscribes us to it.
     this.name = docname;
     this.jqulist = $("<br />"); // The jQuery user list reference
-
+    this.users = [];
+    
     this.resync = function(callback) {
         // Asks the server to resync us.
         $.get("resync_doc", {"doc_name":this.name});
@@ -31,6 +32,11 @@ function gbDocument(docname) {
 
     this.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
+        // TODO: Draw the user list
+        // TODO: Draw the document chunks
+        this.users = data.users; // Copy users
+        pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
+        
         //console.log(data);
     }
 
@@ -38,7 +44,4 @@ function gbDocument(docname) {
     // What we want to do the first time we start up
     this.resync();
     pagehandler.drawNewDoc(this, "open", $(".tablist"));
-    pagehandler.drawNewUser({name:"Bob"},"user",this.jqulist);
-    pagehandler.drawNewUser({name:"Jane"},"user",this.jqulist);
-    pagehandler.removeUser({name:"Bob"}, this.jqulist);
 }
