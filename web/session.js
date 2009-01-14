@@ -78,6 +78,7 @@ session.handleEvent = function(event) {
     // Each event has its own session function, like this: session.new_user, etc.
     /*
      * EVENT LIST
+     *      Global:
      * user_name_change     TODO
      * user_color_change    TODO
      * message              TODO- Please remove
@@ -87,6 +88,9 @@ session.handleEvent = function(event) {
      * new_document         TODO
      * subscribed_user      TODO
      * unsubscribed_user    TODO
+     *
+     *      Documents:
+     * new_chunk            TODO
      */
     switch (event.type) {
         case "returning_user":

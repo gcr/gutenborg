@@ -107,6 +107,9 @@ class Root:
     info.exposed = True
     
     def wait(self, **args):
+        """
+        Sends the events of a logged-in user
+        """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
         assert 'last' in args, "History required."
@@ -123,7 +126,8 @@ class Root:
 
     def subscribe_document(self, **args):
         """
-        Adds a user to a document
+        Subscribes a user to a document. A subscribed user will begin to
+        receive updates of that document's status.
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
