@@ -35,7 +35,7 @@ pagehandler.init = function() {
     // move it here because even though it involves the choice of whether
     // a user is logged in, it seems more like a GUI issue.
     if (session.logged_in) {
-            pagehandler.drawMessageSubmitBox();
+            //pagehandler.drawMessageSubmitBox();
         } else {
             // If we're not logged in, we want a login from.
             pagehandler.drawLoginForm();

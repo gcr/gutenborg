@@ -81,7 +81,6 @@ session.handleEvent = function(event) {
      *      Global:
      * user_name_change     TODO
      * user_color_change    TODO
-     * message              TODO- Please remove
      * returning_user
      * new_user
      * disconnected_user
