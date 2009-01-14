@@ -21,7 +21,8 @@
 
 function gbDocument(docname) {
     this.name = docname;
-    this.doalert = function() {
-        alert(this.name);
-    }
+    
+    
+    // What we want to do:
+    pagehandler.drawNewDoc(this, "open", $(".tablist"));
 }

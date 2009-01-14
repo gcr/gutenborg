@@ -29,8 +29,8 @@ pagehandler.init = function() {
 
     // Draws the userlist and the doclist
     //pagehandler.drawUserList(session.active_users,"online", $(".userlist"));
-    pagehandler.drawAllDocs(session.document_list);
-
+    pagehandler.drawAllDocs(session.document_list, $(".alldocs"));
+    
     // This code was originally in session.init(). I decided to
     // move it here because even though it involves the choice of whether
     // a user is logged in, it seems more like a GUI issue.
@@ -82,13 +82,13 @@ pagehandler.drawUserList = function(users, cssclass, ulist) {
     });
 }
 
-pagehandler.drawAllDocs = function(docs) {
+pagehandler.drawAllDocs = function(docs, adlist) {
     // This function empties the document list. It then fills up the list
     // full of possible documents.
-    $(".doclist").empty();
+    adlist.empty();
     $.each(docs, function(index, d) {
        var newitem = $("<li></li>").text(d);
-       $(newitem).appendTo(".alldocs");
+       $(newitem).appendTo(adlist);
        
        // Add a click handler that subscribes to the document when
        // you click on it.
@@ -107,6 +107,7 @@ pagehandler.drawNewUser = function(user, cssclass, ulist) {
 }
 
 pagehandler.removeUser = function(user, list) {
+    // Removes a user from a user list.
     list.find("li").each(function(index, u){
         if ($(u).text() == user.name) {
              $(this).fadeOut("slow", function(){$(this).remove();});
@@ -114,10 +115,10 @@ pagehandler.removeUser = function(user, list) {
     });
 }
 
-pagehandler.drawNewDoc = function(user, cssclass, dlist) {
+pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     // When we've been subscribed to a document, this function
     // draws the little document block to the bottom of our document
     // tabs.
-    var newitem = $("<li class='"+cssclass+"'></li>").text(user.name);
-    $(newitem).appendTo(dlist).hide().fadeIn("slow");
+    var newitem = $("<div class='"+cssclass+"'></div>").text(doc.name);
+    $(newitem).insertAfter(tlist.find("h3")).hide().fadeIn("slow");
 }
