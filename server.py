@@ -104,15 +104,6 @@ class Root:
         return json.write(response)
     info.exposed = True
     
-    def new(self, **args):
-        # Sends a new text string event to every user
-        cherrypy.session.acquire_lock()
-        assert self.is_logged_in(), "User not logged in"
-        assert 'message' in args, "No message sent"
-        self.gb.send_event({"type": "message", "message": args['message'], "username" : cherrypy.session['user'].name})
-        return "Message posted"
-    new.exposed = True
-    
     def wait(self, **args):
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"

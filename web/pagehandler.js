@@ -72,7 +72,7 @@ pagehandler.drawLoginForm = function() {
     }
 }
 
-pagehandler.drawMessageSubmitBox = function() {
+/*pagehandler.drawMessageSubmitBox = function() {
     // This function draws a small message box where you can
     // say something if you'd like.
     boxform = $("<div class='messagesubmit'></div>").appendTo(".messagewriter");
@@ -86,7 +86,7 @@ pagehandler.drawMessageSubmitBox = function() {
         
         return false;
     });
-}
+}*/
 
 pagehandler.drawUserList = function(users, cssclass) {
     // This function empties the user list. It then fills up the list
