@@ -19,19 +19,24 @@ h2 {
 .tablist {
     background-color: #acc0fe;
 }
+.tablist .open {
+    background-color: #a6fda6;
+    font-weight: bold;
+}
 
-/* Users */
-.userlistbox {
+/* The active document's tab. Hidden
+most of the time. */
+.doctab {
     border-left: solid 3px navy;
     padding-left: 8px;
 }
-.userlistbox h3 {
+.doctab h3 {
     margin-bottom: 0px;
 }
-.userlistbox ul {
+.doctab ul {
     margin-top: 0px;
 }
-.userlist .online {
+.doctab ul .user {
     list-style-image: url('img/status/online.png');
     font-weight: bold;
 }

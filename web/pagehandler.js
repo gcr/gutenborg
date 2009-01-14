@@ -73,7 +73,7 @@ pagehandler.drawLoginForm = function() {
 }
 
 pagehandler.drawUserList = function(users, cssclass, ulist) {
-    // This function empties the user list. It then fills up the list
+    // This function empties a user list. It then fills up the list
     // full of our users.
     ulist.empty();
     $.each(users, function(index, u) {
@@ -101,7 +101,7 @@ pagehandler.drawAllDocs = function(docs, adlist) {
 }
 
 pagehandler.drawNewUser = function(user, cssclass, ulist) {
-    // Draws a new user at the bottom of the list
+    // Draws a new user at the bottom of a list
     var newitem = $("<li class='"+cssclass+"'></li>").text(user.name);
     $(newitem).appendTo(ulist).hide().fadeIn("slow");
 }
@@ -117,8 +117,15 @@ pagehandler.removeUser = function(user, list) {
 
 pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     // When we've been subscribed to a document, this function
-    // draws the little document block to the bottom of our document
+    // draws the little document block at the bottom of our document
     // tabs.
     var newitem = $("<div class='"+cssclass+"'></div>").text(doc.name);
     $(newitem).insertAfter(tlist.find("h3")).hide().fadeIn("slow");
+
+    // Insert the doc tab right after
+    doctab = $("<div class='doctab'>Users:</div>").insertAfter(newitem);
+    ulist = $("<ul></ul>").appendTo(doctab);
+
+    // HACK: Change document's jqulist to this
+    doc.jqulist = ulist;
 }
