@@ -45,12 +45,12 @@ pagehandler.init = function() {
 pagehandler.drawLoginForm = function() {
     // Draws a new login form, assigns handlers.
     if (! session.logged_in) {
-        loginform = $("<div class='loginform'></div>").appendTo("body");
+        loginform = $("<div class='loginform'></div>").appendTo(".docarea");
         loginform.html("<b>You, sir are not logged in!</b> Please do so.<br />");
         loginform.append("<form id='loginform'>"
             + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
             + "<tr><td>Color:</td><td><div class='colorpicker' /><input type='text' id='ucolor' value='#FF0000'/></td></tr>"
-            + "<tr><td colspan=2><input type='submit' val='Log in' /></td></tr></table>"
+            + "<tr><td colspan=2><input type='submit' value='Log in' /></td></tr></table>"
             + "</form>");
         // Assign a colorpicker
         var c = $.farbtastic(".colorpicker")
@@ -119,12 +119,26 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     // When we've been subscribed to a document, this function
     // draws the little document block at the bottom of our document
     // tabs.
+
+    // First, clear all the others
+    pagehandler.clearAllActive(tlist);
+
+    // Then, draw a new tab!
     var newitem = $("<div class='"+cssclass+"'></div>").text(doc.name);
     $(newitem).insertAfter(tlist.find("h3")).hide().fadeIn("slow");
 
-    // Insert the doc tab right after
+    // Set this to be the Active Tab! (No need to call pagehandler.setActive here)
+    $(newitem).addClass("active");
+
+    // Bind a clicker.
+    $(newitem).click(function() {
+        pagehandler.setActive(newitem, tlist);
+    });
+
+    // Insert the doc tab (userlist) right after
     doctab = $("<div class='doctab'>Users:</div>").insertAfter(newitem);
     ulist = $("<ul></ul>").appendTo(doctab);
+    
     // Close button - note that even though I'm adding it to newitem directly
     // (which should only have the document text in it), this does NOT break
     // $(newitem).text, so getting documents by name should still work.
@@ -148,4 +162,33 @@ pagehandler.removeDoc = function(dname, tlist) {
             $(this).fadeOut("slow", function(){$(this).remove();});
         }
     });
+}
+
+pagehandler.clearAllActive = function(tlist) {
+    // This function hides all the tabs' user lists and sets them to inactive.
+    $(tlist).find(".active").each(function (i, tab){
+        $(tab).removeClass("active");
+        $(tab).next().slideUp("medium");
+        $(tab).find("img").hide();
+        
+        // Rebind our click handler.
+        $(tab).click(function() {
+            pagehandler.setActive(tab, tlist);
+        });
+    });
+}
+
+pagehandler.setActive = function(tab, tlist) {
+    // This function sets the tab to active.
+
+    // First, clear any other active tabs
+    pagehandler.clearAllActive(tlist);
+
+    // Then, make it active
+    $(tab).addClass("active");
+    $(tab).next().slideDown("medium");
+    $(tab).find("img").fadeIn("slow");
+    
+    // Now, make sure we can't click it no more.
+    $(tab).unbind("click");
 }

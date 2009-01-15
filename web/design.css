@@ -19,12 +19,20 @@ h2 {
 .loginform {
     margin-left: auto;
     margin-right: auto;
-    border-top: solid 1px #000;
+    margin-top: 3em;
+    border: solid 1px #800;
     width: 50%;
 }
 /* The list of documents */
 .tablist {
     background-color: #dae3fe;
+    position: absolute;
+    width: 15em;
+    top: 5em;
+}
+.tablist h3 {
+    margin-top: 0px;
+    margin-bottom: 1em;
 }
 .tablist .open {
     background-color: #a6fda6;
@@ -50,8 +58,21 @@ most of the time. */
     font-weight: bold;
 }
 
+/* Our document area */
+.docarea {
+    background-color: #fff;
+    border: solid 1px #000000;
+    position: absolute;
+    left: 15em;
+    /*margin-left: 1em;*/
+    right: 1em;
+    bottom: 1em;
+    top: 5em;
+}
 /* The box that contains ALL documents */
 .alldoclistbox {
+    position: absolute;
+    bottom: 1em;
     border-left: solid 3px navy;
     padding-left: 8px;
 }
