@@ -36,7 +36,13 @@ h2 {
 }
 .tablist .open {
     background-color: #a6fda6;
+}
+.tablist .active {
+    background-color: #3bfd3b;
     font-weight: bold;
+}
+.tablist .hover {
+    background-color: #b3fe99;
 }
 
 /* The active document's tab. Hidden

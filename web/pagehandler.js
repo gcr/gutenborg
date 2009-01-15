@@ -127,16 +127,13 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     var newitem = $("<div class='"+cssclass+"'></div>").text(doc.name);
     $(newitem).insertAfter(tlist.find("h3")).hide().fadeIn("slow");
 
-    // Set this to be the Active Tab! (No need to call pagehandler.setActive here)
-    $(newitem).addClass("active");
-
     // Bind a clicker.
     $(newitem).click(function() {
         pagehandler.setActive(newitem, tlist);
     });
 
     // Insert the doc tab (userlist) right after
-    doctab = $("<div class='doctab'>Users:</div>").insertAfter(newitem);
+    doctab = $("<div class='doctab'>Users:</div>").insertAfter(newitem).hide();
     ulist = $("<ul></ul>").appendTo(doctab);
     
     // Close button - note that even though I'm adding it to newitem directly
@@ -146,6 +143,9 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
         session.unsubscribeToDoc(doc.name)
     });
 
+    // Finally, set this to be our active tab.
+    pagehandler.setActive(newitem, tlist);
+    
     // HACK: Change document's jqulist to this
     doc.jqulist = ulist;
 }
@@ -175,6 +175,10 @@ pagehandler.clearAllActive = function(tlist) {
         $(tab).click(function() {
             pagehandler.setActive(tab, tlist);
         });
+
+        // Pretty hover effect.
+        $(tab).hover(function() {$(tab).addClass("hover");},
+            function() {$(tab).removeClass("hover");});
     });
 }
 
@@ -190,5 +194,7 @@ pagehandler.setActive = function(tab, tlist) {
     $(tab).find("img").fadeIn("slow");
     
     // Now, make sure we can't click it no more.
-    $(tab).unbind("click");
+    $(tab).unbind("click"); // Makes it so we can't click on this one'
+    $(tab).unbind("mouseover").unbind("mouseout"); // Unbinds hover- TODO: Doesn't work in IE6'
+    $(tab).removeClass("hover");
 }
