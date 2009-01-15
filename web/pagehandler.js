@@ -110,7 +110,7 @@ pagehandler.removeUser = function(user, list) {
     // Removes a user from a user list.
     list.find("li").each(function(index, u){
         if ($(u).text() == user.name) {
-             $(this).fadeOut("slow", function(){$(this).remove();});
+            $(this).fadeOut("slow", function(){$(this).remove();});
         }
     });
 }
