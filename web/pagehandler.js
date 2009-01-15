@@ -125,6 +125,12 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     // Insert the doc tab right after
     doctab = $("<div class='doctab'>Users:</div>").insertAfter(newitem);
     ulist = $("<ul></ul>").appendTo(doctab);
+    // Close button - note that even though I'm adding it to newitem directly
+    // (which should only have the document text in it), this does NOT break
+    // $(newitem).text, so getting documents by name should still work.
+    closebutton = $("<img style='margin-right: 16px; vertical-align: middle;' src='img/gtk-close.png' alt='Close'>").prependTo(newitem).click(function() {
+        session.unsubscribeToDoc(doc.name)
+    });
 
     // HACK: Change document's jqulist to this
     doc.jqulist = ulist;
