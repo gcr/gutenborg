@@ -25,7 +25,7 @@ function gbDocument(docname) {
     this.jqulist = $("<br />"); // The jQuery user list reference
     this.users = [];
     
-    this.resync = function(callback) {
+    this.resync = function() {
         // Asks the server to resync us.
         $.get("resync_doc", {"doc_name":this.name});
     }
@@ -67,6 +67,13 @@ function gbDocument(docname) {
                 pagehandler.removeUser(leavingUser, this.jqulist); // Un-draw this user
             }
         }
+    }
+
+    this.destroy = function() {
+        // We've been destroyed! Best clean up our actions.
+        pagehandler.removeDoc(this.name, $(".tablist"));
+        // Returns undefined so we can erase it.
+        return undefined;
     }
 
     // What we want to do the first time we start up

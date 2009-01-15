@@ -91,7 +91,7 @@ session.handleEvent = function(event) {
      *      Documents:
      * new_chunk            TODO
      * subscribed_user
-     * unsubscribed_user    TODO
+     * unsubscribed_user
      * resync_doc           TODO
      */
     switch (event.type) {
@@ -116,7 +116,8 @@ session.handleEvent = function(event) {
         case "unsubscribed_user":
             if (event.user.name == session.myname) {
                 // We've been told to scram.
-                alert("TODO: We've left the document.");
+                session.subscribed_docs[event.doc_name] =
+                    session.subscribed_docs[event.doc_name].destroy();
             } else {
                 session.subscribed_docs[event.doc_name].unsubscribed_user(event.user);
             }

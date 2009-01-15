@@ -129,3 +129,15 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     // HACK: Change document's jqulist to this
     doc.jqulist = ulist;
 }
+
+pagehandler.removeDoc = function(dname, tlist) {
+    // Given a document name, we'll un-draw that document and its userlist.
+    tlist.find(".open").each(function(index, d){
+        if ($(d).text() == dname) {
+            // Remove the doctab
+            $(this).next().fadeOut("slow", function(){$(this).remove();});
+            // Remove this
+            $(this).fadeOut("slow", function(){$(this).remove();});
+        }
+    });
+}
