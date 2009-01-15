@@ -92,7 +92,7 @@ session.handleEvent = function(event) {
      * new_chunk            TODO
      * subscribed_user
      * unsubscribed_user
-     * resync_doc           TODO
+     * resync_doc
      */
     switch (event.type) {
         case "returning_user":
