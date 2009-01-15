@@ -54,6 +54,21 @@ function gbDocument(docname) {
         }
     }
 
+    this.unsubscribed_user = function(leavingUser) {
+        // This function removes users from the user list. It does not touch the
+        // document.
+
+        var numUsers = this.users.length;
+        for (var i=0; i<numUsers; i++) {
+            u = this.users[i];
+            if (u.name == leavingUser.name) {
+                numUsers--; // Decrease the number of users left to search
+                this.users.splice(i,1); // Remove this user
+                pagehandler.removeUser(leavingUser, this.jqulist); // Un-draw this user
+            }
+        }
+    }
+
     // What we want to do the first time we start up
     this.resync();
     pagehandler.drawNewDoc(this, "open", $(".tablist"));

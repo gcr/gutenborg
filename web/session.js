@@ -87,12 +87,12 @@ session.handleEvent = function(event) {
      * new_user
      * disconnected_user
      * new_document         TODO
-     * subscribed_user
-     * unsubscribed_user    TODO
-     * resync_doc           TODO
      *
      *      Documents:
      * new_chunk            TODO
+     * subscribed_user
+     * unsubscribed_user    TODO
+     * resync_doc           TODO
      */
     switch (event.type) {
         case "returning_user":
@@ -110,7 +110,15 @@ session.handleEvent = function(event) {
             if (event.user.name == session.myname) {
                 session.subscribed_user_myself(event);
             } else {
-                session.subscribed_user_someone_else(event);
+                session.subscribed_docs[event.doc_name].subscribed_user(event.user);
+            }
+            break;
+        case "unsubscribed_user":
+            if (event.user.name == session.myname) {
+                // We've been told to scram.
+                alert("TODO: We've left the document.");
+            } else {
+                session.subscribed_docs[event.doc_name].unsubscribed_user(event.user);
             }
             break;
         case "resync_doc":
@@ -170,7 +178,4 @@ session.subscribed_user_myself = function(event) {
     // Without knowing it, we've been subscribed to a document. We'll create
     // a new document object and add ourselves.
     session.subscribed_docs[event.doc_name] = new gbDocument(event.doc_name);
-}
-session.subscribed_user_someone_else = function(event) {
-    session.subscribed_docs[event.doc_name].subscribed_user(event.user);
 }
