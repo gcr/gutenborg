@@ -45,8 +45,8 @@ pagehandler.init = function() {
 pagehandler.drawLoginForm = function() {
     // Draws a new login form, assigns handlers.
     if (! session.logged_in) {
-        loginform = $("<div class='.loginform'></div>").appendTo("body");
-        loginform.html("<b>You are not logged in!</b><br />");
+        loginform = $("<div class='loginform'></div>").appendTo("body");
+        loginform.html("<b>You, sir are not logged in!</b> Please do so.<br />");
         loginform.append("<form id='loginform'>"
             + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
             + "<tr><td>Color:</td><td><div class='colorpicker' /><input type='text' id='ucolor' value='#FF0000'/></td></tr>"
