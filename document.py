@@ -83,16 +83,17 @@ class Document:
         """
         Sends an event to the user with the state of the document
         """
-
-        e = self.get_state()
-        # We could use self.send_event, but that would force EVERYONE to resync.
-        # So, I'll just do it myself.
-        # Send the document name too (a la self.send_event)
-        e['doc_name'] = self.name
-        # Send what type of event this is
-        e['type'] = "resync_doc"
-        # And away she goes!
-        user.add_event(e)
+        if user in self.subscribed_users:
+        # Only do this if we're subscribed!
+            e = self.get_state()
+            # We could use self.send_event, but that would force EVERYONE to resync.
+            # So, I'll just do it myself.
+            # Send the document name too (a la self.send_event)
+            e['doc_name'] = self.name
+            # Send what type of event this is
+            e['type'] = "resync_doc"
+            # And away she goes!
+            user.add_event(e)
 
     def new_chunk(self, user, text, position):
         """
