@@ -132,6 +132,8 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
 
 pagehandler.removeDoc = function(dname, tlist) {
     // Given a document name, we'll un-draw that document and its userlist.
+    // TODO! Make sure we find ALL active documents, not just those with
+    // class=open
     tlist.find(".open").each(function(index, d){
         if ($(d).text() == dname) {
             // Remove the doctab

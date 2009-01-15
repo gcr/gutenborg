@@ -108,6 +108,7 @@ session.handleEvent = function(event) {
             break;
         case "subscribed_user":
             if (event.user.name == session.myname) {
+                // Hey sweet! We've been invited!
                 session.subscribed_user_myself(event);
             } else {
                 session.subscribed_docs[event.doc_name].subscribed_user(event.user);
@@ -144,6 +145,10 @@ session.subscribeToDoc = function(d) {
     if (session.subscribed_docs[d] == undefined) {
         $.get("subscribe_document", {"doc_name": d});
     }
+}
+session.unsubscribeToDoc = function(dname) {
+    // Sends an unsubscribe request to the server
+    $.get("unsubscribe_document", {"doc_name": dname});
 }
 
 session.new_user = function(u) {
