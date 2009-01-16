@@ -188,7 +188,12 @@ pagehandler.clearAllActive = function(tlist) {
 
         // Now, hide our document itself
         // TODO: This is ugly!
-        $(session.subscribed_docs[$(tab).text()].jqedit).hide();
+        try {
+            $(session.subscribed_docs[$(tab).text()].jqedit).hide();
+        } catch(err) {
+            // Do absolutely nothing yay. I'm putting this in a try/catch block
+            // because maybe we're not fast enough.'
+        }
     });
 }
 
@@ -210,5 +215,9 @@ pagehandler.setActive = function(tab, tlist) {
     
     // Finally, show our document itself
     // TODO: This is ugly!
-    $(session.subscribed_docs[$(tab).text()].jqedit).show();
+    try {
+        $(session.subscribed_docs[$(tab).text()].jqedit).show();
+    } catch(err) {
+        // Do nothing again.
+    }
 }
