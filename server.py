@@ -194,7 +194,32 @@ class Root:
 
         d.new_chunk(cherrypy.session['user'], args['p'], args['t'])
     new_chunk.exposed = True
-    
+
+    def replace_chunk(self, **args):
+        """
+        Replaces a chunk with the specified text.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args and "p" in args and "t" in args, "Bad request- please supply document name, position, and text."
+        d = self.gb.get_document_by_name(args['doc_name'])
+        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
+
+        d.replace_chunk(cherrypy.session['user'], args['p'], args['t'])
+    replace_chunk.exposed = True
+
+    def remove_chunk(self, **args):
+        """
+        Totally deletes a chunk.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args and "p" in args, "Bad request- please supply document name, position, and text."
+        d = self.gb.get_document_by_name(args['doc_name'])
+        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
+        d.remove_chunk(cherrypy.session['user'], args['p'])
+    remove_chunk.exposed = True
+
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")
     index.exposed = True

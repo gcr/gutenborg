@@ -111,6 +111,26 @@ class Document:
         """
         # Insert the text
         self.content.insert(position, {"author":user, "text":text})
-        # Let everyone else know
+        # Let everyone know
         self.send_event({"type": "new_chunk", "author": user.get_state(), "position": position, "text": text})
+
+    def replace_chunk(self, user, text, position):
+        """
+        Replaces the position'th chunk's text and author with the specified text
+        and author. Note to client: This can change the author, so be prepared
+        for that!
+        """
+        # Replace the chunk
+        self.content[position] = {"author":user, "text":text}
+        # Let everyone know
+        self.send_event({"type": "replace_chunk", "author": user.get_state(), "position": position, "text": text})
+
+    def remove_chunk(self, user, position):
+        """
+        Poof's the chunk so it no longer exists.
+        """
+        # Delete the chunk
+        del self.content[position]
+        # Let everyone know
+        self.send_event({"type": "remove_chunk", "position": position})
 

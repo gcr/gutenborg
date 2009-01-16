@@ -90,6 +90,8 @@ session.handleEvent = function(event) {
      *
      *      Documents:
      * new_chunk            TODO
+     * replace_chunk        TODO
+     * remove_chunk         TODO
      * subscribed_user
      * unsubscribed_user
      * resync_doc
