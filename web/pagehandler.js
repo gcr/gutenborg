@@ -182,9 +182,9 @@ pagehandler.clearAllActive = function(tlist) {
             pagehandler.setActive(tab, tlist);
         });
 
-        // Pretty hover effect.
-        $(tab).hover(function() {$(tab).addClass("hover");},
-            function() {$(tab).removeClass("hover");});
+        // Pretty hover effect. DOESN'T WORK.'
+        //$(tab).hover(function() {$(tab).addClass("hover");},
+        //    function() {$(tab).removeClass("hover");});
 
         // Now, hide our document itself
         // TODO: This is ugly!
@@ -205,8 +205,8 @@ pagehandler.setActive = function(tab, tlist) {
     
     // Now, make sure we can't click it no more.
     $(tab).unbind("click"); // Makes it so we can't click on this one'
-    $(tab).unbind("mouseover").unbind("mouseout"); // Unbinds hover- TODO: Doesn't work in IE6
-    $(tab).removeClass("hover");
+    //$(tab).unbind("mouseover").unbind("mouseout"); // Unbinds hover- TODO: Doesn't work in IE6
+    //$(tab).removeClass("hover");
     
     // Finally, show our document itself
     // TODO: This is ugly!
