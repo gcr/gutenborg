@@ -28,7 +28,7 @@ function gbDocument(docname) {
     this.jqdoctab = $("<br />") // The jQuery doctab.
     this.jqulist = $("<br />"); // The jQuery user list reference inside the doctab.
     this.users = [];
-    this.content = [];
+    //this.content = [];
     
     this.resync = function() {
         // Asks the server to resync us.
@@ -38,14 +38,14 @@ function gbDocument(docname) {
     this.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
         this.users = data.users; // Copy users
-        this.content = data.content;
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
-        this.reset(this.content);
+        this.reset(data.content);
     }
 
     this.reset = function(content) {
         // Save this document
         doc = this;
+        
         // This clears everything and fills it with content.
         this.jqedit.empty();
         
