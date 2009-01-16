@@ -35,7 +35,6 @@ function gbDocument(docname) {
 
     this.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
-        // TODO: Draw the document chunks
         this.users = data.users; // Copy users
         this.content = data.content;
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
