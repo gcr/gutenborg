@@ -115,14 +115,14 @@ pagehandler.removeUser = function(user, list) {
     });
 }
 
-pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
+pagehandler.drawNewDoc = function(doc, tlist) {
     // When we've been subscribed to a document, this function
     // draws the little document block at the bottom of our document
     // tabs.
     
 
     // Then, draw a new tab!
-    var newitem = $("<div class='"+cssclass+"'></div>").text(doc.name);
+    var newitem = $("<div class='opentab'></div>").text(doc.name);
     $(newitem).insertAfter(tlist.find("h3")).hide().fadeIn("slow");
 
     // Bind a clicker.
@@ -165,7 +165,8 @@ pagehandler.removeDoc = function(dname, tlist) {
 pagehandler.clearActive = function() {
     // This function hides all the tabs' user lists and sets them to inactive.
     $.each(session.subscribed_docs, function(dname, d){
-        $(d.jqtab).removeClass("active");
+        $(d.jqtab).removeClass("activetab");
+        $(d.jqtab).addClass("opentab");
         $(d.jqdoctab).slideUp("medium");
         $(d.jqtab).find("img").hide();
         // Rebind our click handler.
@@ -183,7 +184,8 @@ pagehandler.setActive = function(d, tlist) {
     // First, clear any other active tabs
     pagehandler.clearActive();
     // Then, make it active
-    $(d.jqtab).addClass("active");
+    $(d.jqtab).removeClass("opentab");
+    $(d.jqtab).addClass("activetab");
     $(d.jqdoctab).slideDown("medium");
     $(d.jqtab).find("img").show();
     // Now, make sure we can't click it no more.
