@@ -170,12 +170,8 @@ pagehandler.clearActive = function() {
         $(d.jqtab).find("img").hide();
         // Rebind our click handler.
         $(d.jqtab).click(function() {
-            console.log("Click event:");
-            console.log(d.name);
-            console.log(dname);
             pagehandler.setActive(session.subscribed_docs[dname]);
         });
-        console.log("Giving " + d.name + " a click handler... for " + dname)
         // Now, hide our document itself
         $(d.jqedit).hide();
     });
