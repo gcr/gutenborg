@@ -52,7 +52,10 @@ class Document:
         Adds a user to the document's subscribed users list.
         """
         if user in self.subscribed_users:
-            raise NameError, "This user is already subscribed to that document."
+            #raise NameError, "This user is already subscribed to that document."
+            # Might be best to resync them instead.
+            self.resync(user);
+
         self.subscribed_users.append(user)
         self.send_event({"type": "subscribed_user", "user":user.get_state()})
 
