@@ -89,9 +89,9 @@ session.handleEvent = function(event) {
      * new_document         TODO
      *
      *      Documents:
-     * new_chunk            TODO
-     * replace_chunk        TODO
-     * remove_chunk         TODO
+     * new_chunk
+     * replace_chunk
+     * remove_chunk
      * subscribed_user
      * unsubscribed_user
      * resync_doc
@@ -127,6 +127,15 @@ session.handleEvent = function(event) {
             break;
         case "resync_doc":
             session.subscribed_docs[event.doc_name].parse_resync_event(event);
+            break;
+        case "new_chunk":
+            session.subscribed_docs[event.doc_name].parse_new_chunk(event);
+            break;
+        case "replace_chunk":
+            session.subscribed_docs[event.doc_name].parse_replace_chunk(event);
+            break;
+        case "remove_chunk":
+            session.subscribed_docs[event.doc_name].parse_remove_chunk(event);
             break;
         default:
             alert("TODO: Unknown Event! Please see console.");

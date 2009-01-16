@@ -51,9 +51,9 @@ function gbDocument(docname) {
         
         $.each(content, function(index, c) {
             newchunk = $("<span class='chunk'></span>").text(c.text);
-
-            newchunk.css({"background-color": c.author.color});
-            newchunk.attr("author", c.author.name);
+            // Applies foreground and background colors
+            
+            doc.format_chunk(c, newchunk);
             //alert(newchunk.html());
             doc.jqedit.append(newchunk);
         });
@@ -93,6 +93,44 @@ function gbDocument(docname) {
                 pagehandler.removeUser(leavingUser, this.jqulist); // Un-draw this user
             }
         }
+    }
+
+    this.format_chunk = function (event, chunk) {
+        // Applies formatting and background colors.
+        chunk.css({"background-color": event.author.color});
+        chunk.attr("author", event.author.name);
+    }
+
+    this.parse_new_chunk = function(event) {
+        // This gets called whenever an event for a new chunk comes in.
+        var newchunk = $("<span class='chunk'></span>").text(event.text);
+        // Get the position we want to insert at
+        var pos = event.position - 1;
+        console.log(pos);
+        // HACK: Are we at the beginning?
+        if (pos == -1) {
+            // If so, add it at the very beginning.
+            newchunk.prependTo(this.jqedit);
+        } else {
+            // If not, insert it after the specified chunk.
+            newchunk.insertAfter(this.jqedit.find(".chunk").eq(pos));
+        }
+
+        // Clean up the colors
+        this.format_chunk(event, newchunk);
+    }
+
+    this.parse_replace_chunk = function(event) {
+        // This gets called whenever an event to replace my chunk comes in.
+        var chunk_to_replace = this.jqedit.find(".chunk").eq(event.position);
+        chunk_to_replace.text(event.text);
+        this.format_chunk(event, chunk_to_replace);
+    }
+
+    this.parse_remove_chunk = function(event) {
+        // This gets called whenever an event to remove my chunk comes in.
+        var chunk_to_remove = this.jqedit.find(".chunk").eq(event.position);
+        chunk_to_remove.remove();
     }
 
     this.destroy = function() {
