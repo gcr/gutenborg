@@ -20,60 +20,76 @@
 // This script handles subscribed documents and what to do with them.
 
 function gbDocument(docname) {
+    // Save our document
+    doc = this
     // This creates a new document then subscribes us to it.
-    this.name = docname;
-    this.jqulist = $("<br />"); // The jQuery user list reference
-    this.jqedit = $("<iframe class='gb-editor'></iframe>"); // Our jQuery text editor
-    this.users = [];
-    this.content = [];
+    doc.name = docname;
+    doc.jqulist = $("<br />"); // The jQuery user list reference
+    doc.jqedit = $("<div class='gb-editor'></div>"); // Our jQuery text editor
+    doc.users = [];
+    doc.content = [];
     
-    this.resync = function() {
+    doc.resync = function() {
         // Asks the server to resync us.
-        $.get("resync_doc", {"doc_name":this.name});
+        $.get("resync_doc", {"doc_name":doc.name});
     }
 
-    this.parse_resync_event = function(data) {
+    doc.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
         // TODO: Draw the document chunks
-        this.users = data.users; // Copy users
-        this.content = data.content;
-        pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
-        this.jqedit.reset(this.content);
+        doc.users = data.users; // Copy users
+        doc.content = data.content;
+        pagehandler.drawUserList(doc.users, "user", doc.jqulist); // Draw ulist
+        doc.reset(doc.content);
     }
 
-    this.subscribed_user = function(u) {
+    doc.reset = function(content) {
+        // This clears everything and fills it with content.
+        doc.jqedit.empty();
+        
+        $(content).each(function(index, c) {
+            newchunk = $("<span></span>").text(c.text);
+
+            newchunk.css({"background-color": c.author.color});
+            //alert(newchunk.html());
+            doc.jqedit.append(newchunk);
+        });
+        doc.jqedit.attr("contentEditable", true);
+    }
+
+    doc.subscribed_user = function(u) {
         // This gets called when we have another user coming up.
         // TODO: Make sure this function applies colors to the document correctly!
         // Only add the user if there isn't one already.
         var match = false;
-        $.each(this.users, function(index, user) {
+        $.each(doc.users, function(index, user) {
             if (u.name == user.name) {match = true;}
         });
         if (!match) {
             // If we haven't found one, add him!
-            this.users.push(u);
-            pagehandler.drawNewUser(u, "user", this.jqulist);
+            doc.users.push(u);
+            pagehandler.drawNewUser(u, "user", doc.jqulist);
         }
     }
 
-    this.unsubscribed_user = function(leavingUser) {
+    doc.unsubscribed_user = function(leavingUser) {
         // This function removes users from the user list. It does not touch the
         // document.
 
-        var numUsers = this.users.length;
+        var numUsers = doc.users.length;
         for (var i=0; i<numUsers; i++) {
-            u = this.users[i];
+            u = doc.users[i];
             if (u.name == leavingUser.name) {
                 numUsers--; // Decrease the number of users left to search
-                this.users.splice(i,1); // Remove this user
-                pagehandler.removeUser(leavingUser, this.jqulist); // Un-draw this user
+                doc.users.splice(i,1); // Remove this user
+                pagehandler.removeUser(leavingUser, doc.jqulist); // Un-draw this user
             }
         }
     }
 
-    this.destroy = function() {
+    doc.destroy = function() {
         // We've been destroyed! Best clean up our actions.
-        pagehandler.removeDoc(this.name, $(".tablist"));
+        pagehandler.removeDoc(doc.name, $(".tablist"));
         // Returns undefined so we can erase it.
         return undefined;
     }

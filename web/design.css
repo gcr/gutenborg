@@ -23,6 +23,7 @@ h2 {
     border: solid 1px #800;
     width: 50%;
 }
+
 /* The list of documents */
 .tablist {
     background-color: #dae3fe;
@@ -74,6 +75,12 @@ most of the time. */
     right: 1em;
     bottom: 1em;
     top: 5em;
+}
+/* Our lovely editor */
+.gb-editor {
+    width: 100%;
+    height: 100%;
+    background-color: #ddd;
 }
 /* The box that contains ALL documents */
 .alldoclistbox {

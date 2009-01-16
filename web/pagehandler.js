@@ -144,11 +144,8 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     });
 
     // Build a new editor
-    doc.jqedit = $.gbeditor($("<iframe class='document'></iframe>").appendTo(".docarea"),doc);
-
-    // Start it up
-    //doc.jqedit.setup();
-
+    doc.jqedit = $("<div class='gb-editor'></div>").appendTo(".docarea");
+    
     // HACK: Change document's jqulist to this
     doc.jqulist = ulist;
     // Finally, set this to be our active tab.
@@ -167,7 +164,7 @@ pagehandler.removeDoc = function(dname, tlist) {
             // Remove this
             $(this).fadeOut("slow", function(){$(this).remove();});
             // Remove the editor
-            session.subscribed_docs[dname].jqedit.remove();
+            $(session.subscribed_docs[dname].jqedit).remove();
         }
     });
 }
@@ -190,7 +187,7 @@ pagehandler.clearAllActive = function(tlist) {
 
         // Now, hide our document itself
         // TODO: This is ugly!
-        session.subscribed_docs[$(tab).text()].jqedit.hide();
+        $(session.subscribed_docs[$(tab).text()].jqedit).hide();
     });
 }
 
@@ -212,5 +209,5 @@ pagehandler.setActive = function(tab, tlist) {
     
     // Finally, show our document itself
     // TODO: This is ugly!
-    session.subscribed_docs[$(tab).text()].jqedit.show();
+    $(session.subscribed_docs[$(tab).text()].jqedit).show();
 }
