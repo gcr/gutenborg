@@ -20,32 +20,33 @@
 // This script handles subscribed documents and what to do with them.
 
 function gbDocument(docname) {
-    // Save our document
-    doc = this
-    // This creates a new document then subscribes us to it.
-    doc.name = docname;
-    doc.jqulist = $("<br />"); // The jQuery user list reference
-    doc.jqedit = $("<div class='gb-editor'></div>"); // Our jQuery text editor
-    doc.users = [];
-    doc.content = [];
     
-    doc.resync = function() {
+    // This creates a new document then subscribes us to it.
+    this.name = docname;
+    this.jqulist = $("<br />"); // The jQuery user list reference
+    this.jqedit = $("<div class='gb-editor'></div>"); // Our jQuery text editor
+    this.users = [];
+    this.content = [];
+    
+    this.resync = function() {
         // Asks the server to resync us.
-        $.get("resync_doc", {"doc_name":doc.name});
+        $.get("resync_doc", {"doc_name":this.name});
     }
 
-    doc.parse_resync_event = function(data) {
+    this.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
         // TODO: Draw the document chunks
-        doc.users = data.users; // Copy users
-        doc.content = data.content;
-        pagehandler.drawUserList(doc.users, "user", doc.jqulist); // Draw ulist
-        doc.reset(doc.content);
+        this.users = data.users; // Copy users
+        this.content = data.content;
+        pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
+        this.reset(this.content);
     }
 
-    doc.reset = function(content) {
+    this.reset = function(content) {
+        // Save this document
+        doc = this;
         // This clears everything and fills it with content.
-        doc.jqedit.empty();
+        this.jqedit.empty();
         
         $(content).each(function(index, c) {
             newchunk = $("<span></span>").text(c.text);
@@ -54,42 +55,42 @@ function gbDocument(docname) {
             //alert(newchunk.html());
             doc.jqedit.append(newchunk);
         });
-        doc.jqedit.attr("contentEditable", true);
+        this.jqedit.attr("contentEditable", true);
     }
 
-    doc.subscribed_user = function(u) {
+    this.subscribed_user = function(u) {
         // This gets called when we have another user coming up.
         // TODO: Make sure this function applies colors to the document correctly!
         // Only add the user if there isn't one already.
         var match = false;
-        $.each(doc.users, function(index, user) {
+        $.each(this.users, function(index, user) {
             if (u.name == user.name) {match = true;}
         });
         if (!match) {
             // If we haven't found one, add him!
-            doc.users.push(u);
-            pagehandler.drawNewUser(u, "user", doc.jqulist);
+            this.users.push(u);
+            pagehandler.drawNewUser(u, "user", this.jqulist);
         }
     }
 
-    doc.unsubscribed_user = function(leavingUser) {
+    this.unsubscribed_user = function(leavingUser) {
         // This function removes users from the user list. It does not touch the
         // document.
 
-        var numUsers = doc.users.length;
+        var numUsers = this.users.length;
         for (var i=0; i<numUsers; i++) {
-            u = doc.users[i];
+            u = this.users[i];
             if (u.name == leavingUser.name) {
                 numUsers--; // Decrease the number of users left to search
-                doc.users.splice(i,1); // Remove this user
-                pagehandler.removeUser(leavingUser, doc.jqulist); // Un-draw this user
+                this.users.splice(i,1); // Remove this user
+                pagehandler.removeUser(leavingUser, this.jqulist); // Un-draw this user
             }
         }
     }
 
-    doc.destroy = function() {
+    this.destroy = function() {
         // We've been destroyed! Best clean up our actions.
-        pagehandler.removeDoc(doc.name, $(".tablist"));
+        pagehandler.removeDoc(this.name, $(".tablist"));
         // Returns undefined so we can erase it.
         return undefined;
     }
