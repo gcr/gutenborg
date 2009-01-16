@@ -35,7 +35,7 @@ class Root:
         self.DocTwo = Document(self.gb, "Test Document 2", "")
         self.gb.add_document(self.DocTest)
         self.gb.add_document(self.DocTwo)
-        self.u = User(self.gb, "Becca", "#ff0000")
+        self.u = User(self.gb, "Becca", "#00aaaa")
         self.DocTest.subscribe_user(self.u)
         self.DocTest.new_chunk(self.u, "Testing", 0)
         self.DocTest.new_chunk(self.u, "Testing2", 1)
@@ -192,7 +192,7 @@ class Root:
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
 
-        d.new_chunk(cherrypy.session['user'], args['p'], args['t'])
+        d.new_chunk(cherrypy.session['user'], args['t'], int(args['p']))
     new_chunk.exposed = True
 
     def replace_chunk(self, **args):
@@ -205,7 +205,7 @@ class Root:
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
 
-        d.replace_chunk(cherrypy.session['user'], args['p'], args['t'])
+        d.replace_chunk(cherrypy.session['user'], args['t'], int(args['p']))
     replace_chunk.exposed = True
 
     def remove_chunk(self, **args):
@@ -217,7 +217,7 @@ class Root:
         assert "doc_name" in args and "p" in args, "Bad request- please supply document name, position, and text."
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-        d.remove_chunk(cherrypy.session['user'], args['p'])
+        d.remove_chunk(cherrypy.session['user'], int(args['p']))
     remove_chunk.exposed = True
 
     def index(self, **args):
