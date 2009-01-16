@@ -30,7 +30,7 @@ $(document).ready(function(){
     // Error function
 	$(document).ajaxError(function (event, xhr, options, error) {
 		if (xhr.status == 500) {
-			console.log(xhr)
+			//console.log(xhr)
 			document.write(xhr.responseText)
         }
 	});
