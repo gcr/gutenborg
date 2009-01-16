@@ -117,8 +117,8 @@ session.handleEvent = function(event) {
         case "unsubscribed_user":
             if (event.user.name == session.myname) {
                 // We've been told to scram.
-                session.subscribed_docs[event.doc_name] =
-                    session.subscribed_docs[event.doc_name].destroy();
+                session.subscribed_docs[event.doc_name].destroy();
+                delete session.subscribed_docs[event.doc_name];
             } else {
                 session.subscribed_docs[event.doc_name].unsubscribed_user(event.user);
             }

@@ -23,8 +23,10 @@ function gbDocument(docname) {
     
     // This creates a new document then subscribes us to it.
     this.name = docname;
-    this.jqulist = $("<br />"); // The jQuery user list reference
     this.jqedit = $("<div class='gb-editor'></div>"); // Our jQuery text editor
+    this.jqtab = $("<br />"); // The jQuery tab with the name in it and such
+    this.jqdoctab = $("<br />") // The jQuery doctab.
+    this.jqulist = $("<br />"); // The jQuery user list reference inside the doctab.
     this.users = [];
     this.content = [];
     
@@ -90,7 +92,5 @@ function gbDocument(docname) {
     this.destroy = function() {
         // We've been destroyed! Best clean up our actions.
         pagehandler.removeDoc(this.name, $(".tablist"));
-        // Returns undefined so we can erase it.
-        return undefined;
     }
 }

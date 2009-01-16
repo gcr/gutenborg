@@ -119,22 +119,21 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     // When we've been subscribed to a document, this function
     // draws the little document block at the bottom of our document
     // tabs.
-
-    // First, clear all the others
-    pagehandler.clearAllActive(tlist);
+    
 
     // Then, draw a new tab!
     var newitem = $("<div class='"+cssclass+"'></div>").text(doc.name);
     $(newitem).insertAfter(tlist.find("h3")).hide().fadeIn("slow");
 
     // Bind a clicker.
-    $(newitem).click(function() {
-        pagehandler.setActive(newitem, tlist);
-    });
+    /*$(newitem).click(function() {
+        pagehandler.setActive(doc);
+        console.log(doc.name);
+    });*/
 
     // Insert the doc tab (userlist) right after
-    doctab = $("<div class='doctab'>Users:</div>").insertAfter(newitem).hide();
-    ulist = $("<ul></ul>").appendTo(doctab);
+    var doctab = $("<div class='doctab'>Users:</div>").insertAfter(newitem).hide();
+    var ulist = $("<ul></ul>").appendTo(doctab);
     
     // Close button - note that even though I'm adding it to newitem directly
     // (which should only have the document text in it), this does NOT break
@@ -146,78 +145,56 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
     // Build a new editor
     doc.jqedit = $("<div class='gb-editor'></div>").appendTo(".docarea");
     
-    // HACK: Change document's jqulist to this
-    doc.jqulist = ulist;
+    
+    doc.jqdoctab = doctab; // Save the doctab
+    doc.jqtab = newitem; // And also save the tab
+    doc.jqulist = ulist; // And finally the user list.
+    
     // Finally, set this to be our active tab.
-    pagehandler.setActive(newitem, tlist);
+    pagehandler.setActive(doc);
     
 }
 
 pagehandler.removeDoc = function(dname, tlist) {
     // Given a document name, we'll un-draw that document and its userlist.
-    // TODO! Make sure we find ALL active documents, not just those with
-    // class=open
-    
-    tlist.find(".open").each(function(index, d){
-        if ($(d).text() == dname) {
-            // Remove the doctab
-            $(this).next().fadeOut("slow", function(){$(this).remove();});
-            // Remove this
-            $(this).fadeOut("slow", function(){$(this).remove();});
-            // Remove the editor
-            $(session.subscribed_docs[dname].jqedit).remove();
-        }
-    });
+    $(session.subscribed_docs[dname].jqdoctab).fadeOut("slow", function(){$(this).remove();});
+    $(session.subscribed_docs[dname].jqtab).fadeOut("slow", function(){$(this).remove();});
+    $(session.subscribed_docs[dname].jqedit).remove();
 }
 
-pagehandler.clearAllActive = function(tlist) {
+pagehandler.clearActive = function() {
     // This function hides all the tabs' user lists and sets them to inactive.
-    $(tlist).find(".active").each(function (i, tab){
-        $(tab).removeClass("active");
-        $(tab).next().slideUp("medium");
-        $(tab).find("img").hide();
-        
+    $.each(session.subscribed_docs, function(dname, d){
+        $(d.jqtab).removeClass("active");
+        $(d.jqdoctab).slideUp("medium");
+        $(d.jqtab).find("img").hide();
         // Rebind our click handler.
-        $(tab).click(function() {
-            pagehandler.setActive(tab, tlist);
+        $(d.jqtab).click(function() {
+            console.log("Click event:");
+            console.log(d.name);
+            console.log(dname);
+            pagehandler.setActive(session.subscribed_docs[dname]);
         });
-
-        // Pretty hover effect. DOESN'T WORK.'
-        //$(tab).hover(function() {$(tab).addClass("hover");},
-        //    function() {$(tab).removeClass("hover");});
-
+        console.log("Giving " + d.name + " a click handler... for " + dname)
         // Now, hide our document itself
-        // TODO: This is ugly!
-        try {
-            $(session.subscribed_docs[$(tab).text()].jqedit).hide();
-        } catch(err) {
-            // Do absolutely nothing yay. I'm putting this in a try/catch block
-            // because maybe we're not fast enough.'
-        }
+        $(d.jqedit).hide();
     });
 }
 
-pagehandler.setActive = function(tab, tlist) {
+pagehandler.setActive = function(d, tlist) {
     // This function sets the tab to active.
 
     // First, clear any other active tabs
-    pagehandler.clearAllActive(tlist);
-
+    pagehandler.clearActive();
     // Then, make it active
-    $(tab).addClass("active");
-    $(tab).next().slideDown("medium");
-    $(tab).find("img").fadeIn("slow");
-    
+    $(d.jqtab).addClass("active");
+    $(d.jqdoctab).slideDown("medium");
+    $(d.jqtab).find("img").show();
     // Now, make sure we can't click it no more.
-    $(tab).unbind("click"); // Makes it so we can't click on this one'
+    $(d.jqtab).unbind("click"); // Makes it so we can't click on this one'
     //$(tab).unbind("mouseover").unbind("mouseout"); // Unbinds hover- TODO: Doesn't work in IE6
     //$(tab).removeClass("hover");
-    
+
     // Finally, show our document itself
-    // TODO: This is ugly!
-    try {
-        $(session.subscribed_docs[$(tab).text()].jqedit).show();
-    } catch(err) {
-        // Do nothing again.
-    }
+    $(d.jqedit).show();
 }
