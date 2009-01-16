@@ -23,6 +23,7 @@ function gbDocument(docname) {
     // This creates a new document then subscribes us to it.
     this.name = docname;
     this.jqulist = $("<br />"); // The jQuery user list reference
+    this.jqedit = $("<iframe class='gb-editor'></iframe>"); // Our jQuery text editor
     this.users = [];
     
     this.resync = function() {
@@ -35,8 +36,7 @@ function gbDocument(docname) {
         // TODO: Draw the document chunks
         this.users = data.users; // Copy users
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
-        
-        //console.log(data);
+        this.jqedit.clearall();
     }
 
     this.subscribed_user = function(u) {
@@ -75,8 +75,4 @@ function gbDocument(docname) {
         // Returns undefined so we can erase it.
         return undefined;
     }
-
-    // What we want to do the first time we start up
-    this.resync();
-    pagehandler.drawNewDoc(this, "open", $(".tablist"));
 }

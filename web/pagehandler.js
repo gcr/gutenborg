@@ -143,11 +143,17 @@ pagehandler.drawNewDoc = function(doc, cssclass, tlist) {
         session.unsubscribeToDoc(doc.name)
     });
 
+    // Build a new editor
+    doc.jqedit = $.gbeditor($("<iframe class='document'></iframe>").appendTo(".docarea"),doc);
+
+    // Start it up
+    //doc.jqedit.setup();
+
+    // HACK: Change document's jqulist to this
+    doc.jqulist = ulist;
     // Finally, set this to be our active tab.
     pagehandler.setActive(newitem, tlist);
     
-    // HACK: Change document's jqulist to this
-    doc.jqulist = ulist;
 }
 
 pagehandler.removeDoc = function(dname, tlist) {
@@ -160,6 +166,8 @@ pagehandler.removeDoc = function(dname, tlist) {
             $(this).next().fadeOut("slow", function(){$(this).remove();});
             // Remove this
             $(this).fadeOut("slow", function(){$(this).remove();});
+            // Remove the editor
+            session.subscribed_docs[dname].jqedit.remove();
         }
     });
 }
@@ -179,6 +187,10 @@ pagehandler.clearAllActive = function(tlist) {
         // Pretty hover effect.
         $(tab).hover(function() {$(tab).addClass("hover");},
             function() {$(tab).removeClass("hover");});
+
+        // Now, hide our document itself
+        // TODO: This is ugly!
+        session.subscribed_docs[$(tab).text()].jqedit.hide();
     });
 }
 
@@ -195,6 +207,10 @@ pagehandler.setActive = function(tab, tlist) {
     
     // Now, make sure we can't click it no more.
     $(tab).unbind("click"); // Makes it so we can't click on this one'
-    $(tab).unbind("mouseover").unbind("mouseout"); // Unbinds hover- TODO: Doesn't work in IE6'
+    $(tab).unbind("mouseover").unbind("mouseout"); // Unbinds hover- TODO: Doesn't work in IE6
     $(tab).removeClass("hover");
+    
+    // Finally, show our document itself
+    // TODO: This is ugly!
+    session.subscribed_docs[$(tab).text()].jqedit.show();
 }
