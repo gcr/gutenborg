@@ -35,8 +35,9 @@ class Root:
         self.DocTwo = Document(self.gb, "Test Document 2", "")
         self.gb.add_document(self.DocTest)
         self.gb.add_document(self.DocTwo)
-        self.u = User(self.gb, "Becca", "Blue")
-        self.DocTest.new_chunk(self.u, "Testing", 0)
+        self.u = User(self.gb, "Becca", "#ff0000");
+        self.DocTest.new_chunk(self.u, "Testing", 0);
+        self.DocTest.new_chunk(self.u, "Testing2", 1);
 #        self.u = User(self.gb, "Mike", "Blue")
 #        self.me = User(self.gb, "Becca", "Red")
 #        self.gb.add_user(self.u)

@@ -28,10 +28,21 @@ jQuery._gbeditor = function(iframe, doc) {
     ge.remove = function() {
         $(iframe).remove();
     }
-    ge.clearall = function() {
-        // This clears everything.
-        $("body", iframe.contentWindow.document).empty();
-        $("body", iframe.contentWindow.document).text(ge.doc.name);
+
+    ge.reset = function(content) {
+        // This clears everything and fills it with content.
+        edbody = $("body", iframe.contentWindow.document);
+        edbody.empty();
+        //$("body", iframe.contentWindow.document).text(ge.doc.name); //TEST
+        $("<h2></h2>").append("Hi").appendTo($(".docarea"));
+        $(content).each(function(index, c) {
+            newchunk = $("<span></span>").text(c.text);
+            
+            newchunk.css({"background-color": c.author.color});
+            //alert(newchunk.html());
+            newchunk.appendTo(edbody);
+        });
+        
     }
 
 

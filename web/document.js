@@ -25,6 +25,7 @@ function gbDocument(docname) {
     this.jqulist = $("<br />"); // The jQuery user list reference
     this.jqedit = $("<iframe class='gb-editor'></iframe>"); // Our jQuery text editor
     this.users = [];
+    this.content = [];
     
     this.resync = function() {
         // Asks the server to resync us.
@@ -35,8 +36,9 @@ function gbDocument(docname) {
         // What happens when the server sends us a resync event?
         // TODO: Draw the document chunks
         this.users = data.users; // Copy users
+        this.content = data.content;
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
-        this.jqedit.clearall();
+        this.jqedit.reset(this.content);
     }
 
     this.subscribed_user = function(u) {
