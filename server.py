@@ -35,9 +35,10 @@ class Root:
         self.DocTwo = Document(self.gb, "Test Document 2", "")
         self.gb.add_document(self.DocTest)
         self.gb.add_document(self.DocTwo)
-        self.u = User(self.gb, "Becca", "#ff0000");
-        self.DocTest.new_chunk(self.u, "Testing", 0);
-        self.DocTest.new_chunk(self.u, "Testing2", 1);
+        self.u = User(self.gb, "Becca", "#ff0000")
+        self.DocTest.subscribe_user(self.u)
+        self.DocTest.new_chunk(self.u, "Testing", 0)
+        self.DocTest.new_chunk(self.u, "Testing2", 1)
 #        self.u = User(self.gb, "Mike", "Blue")
 #        self.me = User(self.gb, "Becca", "Red")
 #        self.gb.add_user(self.u)
@@ -183,15 +184,15 @@ class Root:
 
     def new_chunk(self, **args):
         """
-        Adds a new chunk by the user into a certain document. The user
-        does not need to be subscribed to said document.
+        Adds a new chunk by the user into a certain document.
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "position" in args and "text" in args, "Bad request- please supply document name, position, and text."
-        
+        assert "doc_name" in args and "p" in args and "t" in args, "Bad request- please supply document name, position, and text."
         d = self.gb.get_document_by_name(args['doc_name'])
-        d.new_chunk(cherrypy.session['user'], args['position'], args['text'])
+        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
+
+        d.new_chunk(cherrypy.session['user'], args['p'], args['t'])
     new_chunk.exposed = True
     
     def index(self, **args):

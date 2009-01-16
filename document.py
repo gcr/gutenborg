@@ -37,6 +37,13 @@ class Document:
         else:
             return False
 
+    def is_subscribed(self, user):
+        """
+        Returns true if the user is subscribed to yonder document, false
+        if we don't know who he is
+        """
+        return user in self.subscribed_users
+
     def send_event(self, event):
         """
         Sends an event to every subscribed user
@@ -51,7 +58,7 @@ class Document:
         """
         Adds a user to the document's subscribed users list.
         """
-        if user in self.subscribed_users:
+        if self.is_subscribed(user):
             #raise NameError, "This user is already subscribed to that document."
             # Might be best to resync them instead.
             self.resync(user);
@@ -63,7 +70,7 @@ class Document:
         """
         Removes a user from the document's subscribed users list.
         """
-        if user in self.subscribed_users:
+        if self.is_subscribed(user):
             self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
             self.subscribed_users.remove(user)
 
@@ -86,7 +93,7 @@ class Document:
         """
         Sends an event to the user with the state of the document
         """
-        if user in self.subscribed_users:
+        if self.is_subscribed(user):
         # Only do this if we're subscribed!
             e = self.get_state()
             # We could use self.send_event, but that would force EVERYONE to resync.

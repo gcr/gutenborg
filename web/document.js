@@ -49,13 +49,19 @@ function gbDocument(docname) {
         // This clears everything and fills it with content.
         this.jqedit.empty();
         
-        $(content).each(function(index, c) {
-            newchunk = $("<span></span>").text(c.text);
+        $.each(content, function(index, c) {
+            newchunk = $("<span class='chunk'></span>").text(c.text);
 
             newchunk.css({"background-color": c.author.color});
+            newchunk.attr("author", c.author.name);
             //alert(newchunk.html());
             doc.jqedit.append(newchunk);
         });
+        /*
+        $(".chunk", this.jqedit).each(function (index, c) {
+            alert($(c).attr("author"));
+        });
+        */
         this.jqedit.attr("contentEditable", true);
     }
 
