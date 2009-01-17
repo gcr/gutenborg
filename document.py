@@ -61,7 +61,8 @@ class Document:
         if self.is_subscribed(user):
             #raise NameError, "This user is already subscribed to that document."
             # Might be best to resync them instead.
-            self.resync(user);
+            self.resync(user)
+            return False
 
         self.subscribed_users.append(user)
         self.send_event({"type": "subscribed_user", "user":user.get_state()})
@@ -109,6 +110,10 @@ class Document:
         """
         Appends the text to the chunk at the position'th place
         """
+        if position > len(self.content):
+            # Uh oh! They're out of sync. Best force a resync.
+            self.resync(user)
+            return False
         # Insert the text
         self.content.insert(position, {"author":user, "text":text})
         # Let everyone know
@@ -120,6 +125,10 @@ class Document:
         and author. Note to client: This can change the author, so be prepared
         for that!
         """
+        if position >= len(self.content):
+            # Uh oh! They're out of sync! Best force a resync.
+            self.resync(user)
+            return False
         # Replace the chunk
         self.content[position] = {"author":user, "text":text}
         # Let everyone know
