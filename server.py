@@ -185,15 +185,15 @@ class Root:
 
     def new_chunk(self, **args):
         """
-        Adds a new chunk by the user into a certain document.
+        Adds a new chunk by the user into a certain document right after ID.
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "p" in args and "t" in args, "Bad request- please supply document name, position, and text."
+        assert "doc_name" in args and "id" in args and "t" in args, "Bad request- please supply document name, ID of previous (0 if you want yours right at the beginning), and text."
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
 
-        d.new_chunk(cherrypy.session['user'], args['t'], int(args['p']))
+        d.new_chunk(cherrypy.session['user'], args['t'], int(args['id']))
     new_chunk.exposed = True
 
     def replace_chunk(self, **args):
@@ -202,11 +202,11 @@ class Root:
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "p" in args and "t" in args, "Bad request- please supply document name, position, and text."
+        assert "doc_name" in args and "id" in args and "t" in args, "Bad request- please supply document name, chunk ID, and text."
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
 
-        d.replace_chunk(cherrypy.session['user'], args['t'], int(args['p']))
+        d.replace_chunk(cherrypy.session['user'], args['t'], int(args['id']))
     replace_chunk.exposed = True
 
     def remove_chunk(self, **args):
@@ -215,10 +215,10 @@ class Root:
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "p" in args, "Bad request- please supply document name and position."
+        assert "doc_name" in args and "id" in args, "Bad request- please supply document name and position."
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-        d.remove_chunk(cherrypy.session['user'], int(args['p']))
+        d.remove_chunk(cherrypy.session['user'], int(args['id']))
     remove_chunk.exposed = True
 
     def split_chunk(self, **args):
@@ -227,11 +227,11 @@ class Root:
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "p" in args and "o" in args, "Bad request- please supply document name, position, and offset."
+        assert "doc_name" in args and "id" in args and "o" in args, "Bad request- please supply document name, ID, and offset."
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
 
-        d.split_chunk(int(args['p']), int(args['o']))
+        d.split_chunk(int(args['id']), int(args['o']))
     split_chunk.exposed = True
 
     def index(self, **args):

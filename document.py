@@ -23,7 +23,9 @@ class Document:
         self.name = name
         self.gutenborg = gutenborg
         self.author = author
-        self.content = [] # Stored like this: [{"text": String, "author": User}, ...]
+        self.next_id = 1 # We're storing unique chunk IDs here.
+        self.seq_id = [] # Stored like this in document order: [chunk id, chunk id, ...]
+        self.content = {} # Stored like this: {chunk id: {"text": String, "author": User}, ...}
         self.subscribed_users = []
 
     def __str__(self):
@@ -79,15 +81,20 @@ class Document:
         """
         Gets the contents of the document in an easily parsable form.
         DO NOT USE DIRECTLY unless you know what you're doing! Use the resync
-        event instead.
+        event instead. If you use this, your clients will get out of sync!
         """
         r = {}
         r['users'] = []
         for u in self.subscribed_users:
             r['users'].append(u.get_state())
+            
         r['content'] = []
-        for chunk in self.content:
-            r['content'].append({"text": chunk['text'], "author":chunk['author'].get_state()})
+        for id in self.seq_id:
+            r['content'].append({
+                "text": self.content[id]['text'],
+                "author": self.content[id]['author'].get_state(),
+                "id": id
+            })
         return r
 
     def resync(self, user):
@@ -106,55 +113,81 @@ class Document:
             # And away she goes!
             user.add_event(e)
 
-    def new_chunk(self, user, text, position):
+    def new_chunk(self, user, text, id):
         """
-        Appends the text to the chunk at the position'th place
+        Appends the chunk to the chunk after ID. (Use 0 to specify the start
+        of the document.)
         """
-        if position > len(self.content):
-            # Uh oh! They're out of sync. Best force a resync.
-            self.resync(user)
-            return False
-        # Insert the text
-        self.content.insert(position, {"author":user, "text":text})
+        # Store the text in our object
+        self.content[self.next_id] = {"author": user, "text": text}
+        if (id == 0):
+            # The user wanted this chunk to go at the beginning.
+            self.seq_id.insert(0, self.next_id)
+        else:
+            # Insert it just after the chunk with ID id
+            self.seq_id.insert(self.seq_id.index(id)+1, self.next_id)
+            
         # Let everyone know
-        self.send_event({"type": "new_chunk", "author": user.get_state(), "position": position, "text": text})
+        self.send_event({"type": "new_chunk", "author": user.get_state(), "id": id, "new_id":self.new_id, "text": text})
+        # And increment self.next_id
+        self.next_id += 1
 
-    def replace_chunk(self, user, text, position):
+    def replace_chunk(self, user, text, id):
         """
-        Replaces the position'th chunk's text and author with the specified text
+        Replaces the chunk with ID's text and author with the specified text
         and author. Note to client: This can change the author, so be prepared
-        for that!
+        for that! It will NOT, however, change the ID.
         """
-        if position >= len(self.content):
-            # Uh oh! They're out of sync! Best force a resync.
-            self.resync(user)
-            return False
         # Replace the chunk
-        self.content[position] = {"author":user, "text":text}
+        self.content[id] = {"author":user, "text":text}
         # Let everyone know
-        self.send_event({"type": "replace_chunk", "author": user.get_state(), "position": position, "text": text})
+        self.send_event({"type": "replace_chunk", "author": user.get_state(), "id": id, "text": text})
 
-    def remove_chunk(self, user, position):
+    def remove_chunk(self, user, id):
         """
-        Poof's the chunk so it no longer exists.
+        Poof's the chunk with ID id so it no longer exists.
         """
         # Delete the chunk
-        del self.content[position]
+        del self.content[id]
+        self.seq_id.remove(id)
         # Let everyone know
-        self.send_event({"type": "remove_chunk", "position": position})
+        self.send_event({"type": "remove_chunk", "id": id})
 
-    def split_chunk(self, position, offset):
+    def split_chunk(self, id, offset):
         """
-        Splits the position'th chunk at OFFSET into two chunks.
+        Splits the chunk with ID id at offset into two chunks.
         """
-        text = self.content[position]['text'];
-        user = self.content[position]['author'];
+        # Get what we need to know
+        text = self.content[id]['text'];
+        user = self.content[id]['author'];
         before = {"author": user, "text": text[:offset]}
         after = {"author": user, "text": text[offset:]}
+        
+        # Claim our ids
+        bid = self.next_id
+        aid = self.next_id + 1
+        self.next_id += 2
 
-        del self.content[position]
-        self.content.insert(position, after)
-        self.content.insert(position, before)
-        self.send_event({"type": "split_chunk", "position": position, "offset": offset})
+        # Add them to the dictionary
+        self.content[bid] = before
+        self.content[aid] = after
+
+        # and to our sequential list
+        p = self.seq_id.index(id)
+        self.seq_id.insert(p, aid)
+        self.seq_id.insert(p, bid)
+
+        # Remove the old chunk (might want to be more graceful)
+        del self.content[id]
+        self.seq_id.remove(id)
+
+        # and lastly tell everyone about it.
+        self.send_event({
+            "type": "split_chunk",
+            "id":id,
+            "aid":aid,
+            "bid";bid,
+            "offset": offset
+        })
 
 
