@@ -56,6 +56,8 @@ function gbDocument(docname) {
         // Save this document
         doc = this;
         
+        this.disable_editing();
+
         // This clears everything and fills it with content.
         this.jqedit.empty();
         
@@ -72,7 +74,52 @@ function gbDocument(docname) {
             alert($(c).attr("author"));
         });
         */
+        this.enable_editing();
+    }
+
+    this.disable_editing = function() {
+        this.jqedit.attr("contentEditable", false);
+        this.jqedit.unbind("keypress");
+    }
+
+    this.enable_editing = function() {
         this.jqedit.attr("contentEditable", true);
+        // Save the document object
+        doc = this;
+        this.jqedit.keypress(function(event) {
+            // What to do when we got a key
+            event.preventDefault();
+            alert("Which:" + event.which +", letter: " +
+                String.fromCharCode(event.charCode));
+        });
+    }
+
+    this.get_range = function() {
+        // Returns a range object
+        var userSelection;
+        if (window.getSelection) {
+            userSelection = window.getSelection();
+        }
+        else if (document.selection) { // should come last; Opera!
+            userSelection = document.selection.createRange();
+        }
+        return userSelection;
+    }
+    
+    this.is_cursor = function() {
+        // Returns true if we have just a cursor, false if it's a selection
+        var range = this.get_range();
+        if (typeof range.text != 'undefined') {
+            // IE
+            selectedText = range.text;
+        } else {
+            // Firefox
+            selectedText = range.toString();
+        }/*
+        console.log(range);
+        console.log(selectedText);
+        console.log(selectedText.toString());*/
+        return (selectedText.length == 0)
     }
 
     this.subscribed_user = function(u) {
