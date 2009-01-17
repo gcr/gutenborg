@@ -24,12 +24,22 @@ import sys
 import os
 from gutenborg import Gutenborg
 from user import User
+from document import Document
 
 class Root:
     def __init__(self, name, tagline):
         self.gb = Gutenborg(name, tagline)
         
-        # Some server test things. Don't need anymore.
+        # Some server test things.
+        self.DocTest = Document(self.gb, "Doc1", "")
+        self.DocTwo = Document(self.gb, "Test Document 2", "")
+        self.gb.add_document(self.DocTest)
+        self.gb.add_document(self.DocTwo)
+        self.u = User(self.gb, "Becca", "#008888")
+        self.gb.add_user(self.u)
+        self.DocTest.subscribe_user(self.u)
+        self.DocTest.new_chunk(self.u, "Testing", 0)
+        self.DocTest.new_chunk(self.u, "Hello World!", 1)
 #        self.u = User(self.gb, "Mike", "Blue")
 #        self.me = User(self.gb, "Becca", "Red")
 #        self.gb.add_user(self.u)
@@ -70,17 +80,17 @@ class Root:
         Logs a user out
         """
         cherrypy.session.acquire_lock()
-        assert self.is_logged_in(), "User not logged in"
+        assert self.is_logged_in(), "User not logged in, no need to logout."
         self.gb.disconnect_user(cherrypy.session['user'], "logout")
         del cherrypy.session['user']
         raise cherrypy.HTTPRedirect("/")
     logout.exposed = True
     
     def info(self, **args):
+        # TODO: We must make this an event!
         """
         Returns a JSON object containing lots of server information
         """
-        # TODO: Add document information
         cherrypy.session.acquire_lock()
         cherrypy.response.headers['Content-Type'] = 'text/json'
         response = {}
@@ -88,10 +98,13 @@ class Root:
         response['tag'] = self.gb.tagline
         response['active_users'] = []
         response['dead_users'] = []
+        response['documents'] = []
         for u in self.gb.active_users[:]:
             response['active_users'].append(u.get_state())
         for u in self.gb.dead_users[:]:
             response['dead_users'].append(u.get_state())
+        for d in self.gb.documents[:]:
+            response['documents'].append(d.name)
         
         # Are we logged in?
         if self.is_logged_in():
@@ -99,16 +112,10 @@ class Root:
         return json.write(response)
     info.exposed = True
     
-    def new(self, **args):
-        # Sends a new text string event to every user
-        cherrypy.session.acquire_lock()
-        assert self.is_logged_in(), "User not logged in"
-        assert 'message' in args, "No message sent"
-        self.gb.send_event({"type": "message", "message": args['message'], "username" : cherrypy.session['user'].name})
-        return "Message posted"
-    new.exposed = True
-    
     def wait(self, **args):
+        """
+        Sends the events of a logged-in user
+        """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
         assert 'last' in args, "History required."
@@ -122,12 +129,114 @@ class Root:
         return user.get_events(int(args['last']))
         
     wait.exposed = True
-    
+
+    def subscribe_document(self, **args):
+        """
+        Subscribes a user to a document. A subscribed user will begin to
+        receive updates of that document's status.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args, "Document name required"
+
+        user = cherrypy.session['user']
+        # Get our document object
+        d = self.gb.get_document_by_name(args['doc_name'])
+        d.subscribe_user(user);
+    subscribe_document.exposed = True
+
+    def unsubscribe_document(self, **args):
+        """
+        Causes a user to leave the document.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args, "Document name required"
+
+        user = cherrypy.session['user']
+        # Get our document object
+        d = self.gb.get_document_by_name(args['doc_name'])
+        d.unsubscribe_user(user);
+    unsubscribe_document.exposed = True
+
+    def resync_doc(self, **args):
+        """
+        Sends the entire document state as a resync_doc event to the user
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args, "Document name required"
+        
+        user = cherrypy.session['user']
+        # Get our document object
+        d = self.gb.get_document_by_name(args['doc_name'])
+        d.resync(user);
+    resync_doc.exposed = True
+    # CONSIDERED HARMFUL! Use resync_doc() instead.
+    #def get_document_state(self, **args):
+    #    """
+    #    Gets the document's contents and userlist. Note that the requester does not need
+    #    to be logged in.
+    #    """
+    #    assert "doc_name" in args, "Document name required"
+    #    d = self.gb.get_document_by_name(args['doc_name'])
+    #    return json.write(d.get_state())
+    #get_document_state.exposed = True
+
+    def new_chunk(self, **args):
+        """
+        Adds a new chunk by the user into a certain document right after ID.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args and "id" in args and "t" in args, "Bad request- please supply document name, ID of previous (0 if you want yours right at the beginning), and text."
+        d = self.gb.get_document_by_name(args['doc_name'])
+        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
+
+        d.new_chunk(cherrypy.session['user'], args['t'], int(args['id']))
+    new_chunk.exposed = True
+
+    def replace_chunk(self, **args):
+        """
+        Replaces a chunk with the specified text.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args and "id" in args and "t" in args, "Bad request- please supply document name, chunk ID, and text."
+        d = self.gb.get_document_by_name(args['doc_name'])
+        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
+
+        d.replace_chunk(cherrypy.session['user'], args['t'], int(args['id']))
+    replace_chunk.exposed = True
+
+    def remove_chunk(self, **args):
+        """
+        Totally deletes a chunk.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args and "id" in args, "Bad request- please supply document name and position."
+        d = self.gb.get_document_by_name(args['doc_name'])
+        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
+        d.remove_chunk(cherrypy.session['user'], int(args['id']))
+    remove_chunk.exposed = True
+
+    def split_chunk(self, **args):
+        """
+        Splits the position'th chunk into two right at offset.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args and "id" in args and "o" in args, "Bad request- please supply document name, ID, and offset."
+        d = self.gb.get_document_by_name(args['doc_name'])
+        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
+
+        d.split_chunk(int(args['id']), int(args['o']))
+    split_chunk.exposed = True
+
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")
     index.exposed = True
-    
-    
 
 cherrypy.config.update({
 'server.socket_port': 8000,

@@ -18,8 +18,31 @@
 
 
 $(document).ready(function(){
-	
-    $(".gutenborg-document").document("server", 0, "michael");
+
+    var iframe = $("<iframe></iframe>").appendTo(".docarea").get(0);
+
+    var content=[{"text":"Testing","author":{"color":"#ff0000","name":"Becca"}},{"text":"Testing2","author":{"color":"#ff0000","name":"Becca"}}];
+    //alert(iframe.contentWindow.document);
+    iframe.contentWindow.document.open();
+    iframe.contentWindow.document.write("<html><head>" +
+    "<link href='design.css' rel='stylesheet' type='text/css' />" +
+    "</head><body></body></html>");
+    //alert($("body", iframe.contentWindow.document).html());
+    iframe.contentWindow.document.close();
+    
+    $(iframe.contentWindow.document.body).append("<span>Hello</span>");
+    edbody = $(iframe.contentWindow.document.body);
+    //$("body", iframe.contentWindow.document).text(ge.doc.name); //TEST
+    x = $("<h2></h2>").text("Hi");
+    $("body", iframe.contentWindow.document).append("<h2>AAA</h2>");
+
+    /*
+    $(content).each(function(index, c) {
+        newchunk = $("<span></span>").text(c.text);
+        newchunk.css({"background-color": c.author.color});
+        //alert(newchunk.html());
+        newchunk.appendTo(edbody);
+    });*/
 	
 });
 
@@ -27,7 +50,7 @@ $(document).ready(function(){
 </head>
 <body>
 <h2>Gutenborg - Editable Iframe Demo</h2>
-<iframe class="gutenborg-document" style="display: block; width: 500px; height: 500px; border: solid 1px #808080; margin-left: auto; margin-right: auto;" />
+<div class="docarea"></div>
 
 </body>
 </html>

@@ -41,6 +41,12 @@ class Gutenborg:
         """
         Creates a new user and adds him to the active user list.
         """
+
+        # TODO: In each document, returning users' colors are all wacko. Fix by
+        # going through each chunk in each document and setting the author to user.
+        
+        # TODO: Also fix this in the client.
+
         if user in self.active_users:
             # User is already logged in, do nothing.
             raise NameError, "User already exists in active user list"
@@ -63,6 +69,11 @@ class Gutenborg:
         """
         self.active_users.remove(user)
         self.dead_users.append(user)
+        
+        # Gotta unsubscribe him from each and every document we know about
+        for d in self.documents:
+            d.unsubscribe_user(user)
+            
         # Make sure that this comes AFTER the user is removed
         # else it could cause infinite loops if the user object
         # itself triggered the disconnect.
@@ -75,5 +86,20 @@ class Gutenborg:
         """
         for u in self.active_users:
             u.try_timeout(gracetime)
-            
-    
+
+    def get_document_by_name(self, dname):
+        """
+        Given a document name, return the corresponding document object
+        that our Gutenborg instance knows about
+        """
+        for d in self.documents:
+            if d.name == dname:
+                return d
+        raise NameError, "Document '" + dname + "' does not exist"
+
+    def add_document(self, document):
+        """
+        This function registers a new document with the server.
+        """
+        self.send_event({"type": "new_document", "document": document.name})
+        self.documents.append(document)

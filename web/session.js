@@ -30,6 +30,7 @@ session.init = function() {
     session.getServerInfo(function() {
         // This is a callback. It should be executed after the server
         // information is gotten.
+
         pagehandler.init(); // Begin drawing the page
         session.waitForEvents();
     });
@@ -43,7 +44,9 @@ session.getServerInfo = function(callback) {
         document.title = data.name; // Set the window title. Nice effect.
         session.servertag = data.tag;
         session.active_users = data.active_users;
-        session.dead_users = data.dead_users;
+        //session.dead_users = data.dead_users; // I don't need to care, do I?'
+        session.document_list = data.documents;
+        session.subscribed_docs = {};
         if (data.logged_in_username) {
             // Are we logged in?
             session.logged_in = true;
@@ -74,36 +77,72 @@ session.waitForEvents = function() {
 
 session.handleEvent = function(event) {
     // When we get an event, this function describes what to do with it.
-    // TODO: Gotta change this up.
+    // Each event has its own session function, like this: session.new_user, etc.
+    /*
+     * EVENT LIST
+     *      Global:
+     * user_name_change     TODO
+     * user_color_change    TODO
+     * returning_user
+     * new_user
+     * disconnected_user
+     * new_document         TODO
+     *
+     *      Documents:
+     * new_chunk
+     * replace_chunk
+     * remove_chunk
+     * split_chunk
+     * subscribed_user
+     * unsubscribed_user
+     * resync_doc
+     */
     switch (event.type) {
         case "returning_user":
-            session.returning_user(event.user);
+            // TODO: Make this event handle document colors!
+            session.new_user(event.user);
             break;
         case "new_user":
+            // TODO: Make this ignore me like subscribed_user does.
             session.new_user(event.user);
             break;
         case "disconnected_user":
             session.disconnect_user(event.user);
             break;
-        case "user_color_change":
-            alert ("User changed his color: " + event.name + ", new color: " + event.newcolor);
+        case "subscribed_user":
+            if (event.user.name == session.myname) {
+                // Hey sweet! We've been invited!
+                session.subscribed_user_myself(event);
+            } else {
+                session.subscribed_docs[event.doc_name].subscribed_user(event.user);
+            }
             break;
-        case "user_name_change":
-            alert ("User changed his name: " + event.oldname + ", new name: " + event.newname);
+        case "unsubscribed_user":
+            if (event.user.name == session.myname) {
+                // We've been told to scram.
+                session.subscribed_docs[event.doc_name].destroy();
+                delete session.subscribed_docs[event.doc_name];
+            } else {
+                session.subscribed_docs[event.doc_name].unsubscribed_user(event.user);
+            }
             break;
-        case "message":
-            $("<div class='message'></div>").text(event.username + ": " + event.message).appendTo(".responseholder").hide().show("slow");
+        case "resync_doc":
+            session.subscribed_docs[event.doc_name].parse_resync_event(event);
+            break;
+        case "new_chunk":
+            session.subscribed_docs[event.doc_name].parse_new_chunk(event);
+            break;
+        case "replace_chunk":
+            session.subscribed_docs[event.doc_name].parse_replace_chunk(event);
+            break;
+        case "remove_chunk":
+            session.subscribed_docs[event.doc_name].parse_remove_chunk(event);
+            break;
+        case "split_chunk":
+            session.subscribed_docs[event.doc_name].parse_split_chunk(event);
             break;
         default:
-            alert("Unknown Event! Please see console.");
-
-    }
-}
-
-session.sendEvent = function(event) {
-    // Sends a new event to all users. NOTE: This should be serialized.
-    if (session.logged_in) {
-        $.getJSON("new", {message: event});
+            alert("TODO: Unknown Event! Please see console.");
     }
 }
 
@@ -114,6 +153,19 @@ session.login = function(name, color){
     });
 }
 
+session.subscribeToDoc = function(d) {
+    // Sends a subscribe request ONLY if we're not part of a document.
+    // When our subscription event has been recieved, we'll handle it in
+    // session.subscribed_user_myself
+    if (session.subscribed_docs[d] == undefined) {
+        $.get("subscribe_document", {"doc_name": d});
+    }
+}
+session.unsubscribeToDoc = function(dname) {
+    // Sends an unsubscribe request to the server
+    $.get("unsubscribe_document", {"doc_name": dname});
+}
+
 session.new_user = function(u) {
     // Only add the user if there isn't one already.
     var match = false;
@@ -122,7 +174,7 @@ session.new_user = function(u) {
     });
     if (!match) {
         session.active_users.push(u);
-        pagehandler.drawNewUser(u, "online");
+        pagehandler.drawNewUser(u, "online", $(".userlist"));
     }
 }
 
@@ -137,24 +189,18 @@ session.disconnect_user = function(leavingUser) {
         if (u.name == leavingUser.name) {
             numUsers--; // Decrease the number of users left to search
             session.active_users.splice(i,1); // Remove this user
-            pagehandler.removeUser(leavingUser, "online"); // Un-draw this user
-            session.dead_users.push(leavingUser); // Add this user to the dead list
+            pagehandler.removeUser(leavingUser, $(".userlist")); // Un-draw this user
+            //session.dead_users.push(leavingUser); // Add this user to the dead list
         }
     }
 }
 
-session.returning_user = function(returningUser) {
-    // This function removes users from the dead list and puts them
-    // on the active list. Note that this only affects the client.
-
-    var numUsers = session.dead_users.length;
-    for (var i=0; i<numUsers; i++) {
-        u = session.dead_users[i];
-        if (u.name == returningUser.name) {
-            numUsers--; // Decrease the number of users left to search
-            session.dead_users.splice(i,1); // Remove this user from the dead_list
-            pagehandler.drawNewUser(returningUser, "online") // Un-draw this user
-            session.active_users.push(returningUser); // Add this user to the active list
-        }
-    }
+session.subscribed_user_myself = function(event) {
+    // Without knowing it, we've been subscribed to a document. We'll create
+    // a new document object and add ourselves.
+    session.subscribed_docs[event.doc_name] = new gbDocument(event.doc_name);
+    pagehandler.drawNewDoc(session.subscribed_docs[event.doc_name], $(".tablist"));
+    
+    // Resync the document
+    session.subscribed_docs[event.doc_name].resync();
 }

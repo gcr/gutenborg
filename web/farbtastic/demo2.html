@@ -30,6 +30,7 @@
       .focus(function() {
         if (selected) {
           $(selected).css('opacity', 0.75).removeClass('colorwell-selected');
+          $(f).hide();
         }
         f.linkTo(this);
         p.css('opacity', 1);
