@@ -128,7 +128,7 @@ class Document:
             self.seq_id.insert(self.seq_id.index(id)+1, self.next_id)
             
         # Let everyone know
-        self.send_event({"type": "new_chunk", "author": user.get_state(), "id": id, "new_id":self.new_id, "text": text})
+        self.send_event({"type": "new_chunk", "author": user.get_state(), "id": id, "new_id":self.next_id, "text": text})
         # And increment self.next_id
         self.next_id += 1
 
@@ -186,7 +186,7 @@ class Document:
             "type": "split_chunk",
             "id":id,
             "aid":aid,
-            "bid";bid,
+            "bid":bid,
             "offset": offset
         })
 

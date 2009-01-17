@@ -30,14 +30,12 @@ function gbDocument(docname) {
     this.users = [];
     //this.content = [];
 
-    this.get_user_by_name = function(n) {
-        // Returns the user object with name n
-        $.each(this.users, function(i, u) {
-            if (u.name == n) {
-                x = u;
-            }
-        });
-        return x;
+    this.extract_user_from_chunk = function(chunk) {
+        // Given a jQuery chunk object, extract a working user
+        // from it.
+        var c = $(chunk).attr("color");
+        var n = $(chunk).attr("author");
+        return {"name": n, "color": c}
     }
 
     this.resync = function() {
@@ -214,6 +212,7 @@ function gbDocument(docname) {
         brightness = rgbToHsl(unpack(author.color))[2];
         chunk.css({"background-color": author.color,
             "color": brightness > 0.5 ? '#000' : '#fff'});
+        chunk.attr("color", author.color);
     }
 
     this.parse_new_chunk = function(event) {
@@ -252,8 +251,7 @@ function gbDocument(docname) {
         var text = chunk_to_split.text();
         var before = $("<span class='chunk'></span>").text(text.slice(0, event.offset));
         var after = $("<span class='chunk'></span>").text(text.slice(event.offset));
-        var uname = chunk_to_split.attr("author");
-        var u = this.get_user_by_name(uname);
+        var u = this.extract_user_from_chunk(chunk_to_split);
 
         this.format_chunk(u, event.bid, before);
         this.format_chunk(u, event.aid, after);
