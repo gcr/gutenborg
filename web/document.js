@@ -65,7 +65,7 @@ function gbDocument(docname) {
             newchunk = $("<span class='chunk'></span>").text(c.text);
             // Applies foreground and background colors
             
-            doc.format_chunk(c.author, newchunk);
+            doc.format_chunk(c.author, c.id, newchunk);
             //alert(newchunk.html());
             doc.jqedit.append(newchunk);
         });
@@ -172,9 +172,10 @@ function gbDocument(docname) {
         }
     }
 
-    this.format_chunk = function (author, chunk) {
+    this.format_chunk = function (author, id, chunk) {
         // Applies formatting and background colors.
         chunk.attr("author", author.name);
+        chunk.attr("id", id)
         // A couple functions copied from farbtastic.js, THANK YOU!
         unpack = function(color) {
             if (color.length == 7) {
@@ -218,45 +219,44 @@ function gbDocument(docname) {
     this.parse_new_chunk = function(event) {
         // This gets called whenever an event for a new chunk comes in.
         var newchunk = $("<span class='chunk'></span>").text(event.text);
-        // Get the position we want to insert at
-        var pos = event.position - 1;
-        // HACK: Are we at the beginning?
-        if (pos == -1) {
+        id = event.id
+        // Do we want to put this at the beginning?
+        if (id == 0) {
             // If so, add it at the very beginning.
             newchunk.prependTo(this.jqedit);
         } else {
-            // If not, insert it after the specified chunk.
-            newchunk.insertAfter(this.jqedit.find(".chunk").eq(pos));
+            // If not, insert it after the chunk with ID id.
+            newchunk.insertAfter(this.jqedit.find("[id=" + id + "]"));
         }
 
         // Clean up the colors
-        this.format_chunk(event.author, newchunk);
+        this.format_chunk(event.author, event.new_id, newchunk);
     }
 
     this.parse_replace_chunk = function(event) {
         // This gets called whenever an event to replace my chunk comes in.
-        var chunk_to_replace = this.jqedit.find(".chunk").eq(event.position);
+        var chunk_to_replace = this.jqedit.find("[id=" + event.id + "]");
         chunk_to_replace.text(event.text);
-        this.format_chunk(event.author, chunk_to_replace);
+        this.format_chunk(event.author, event.id, chunk_to_replace);
     }
 
     this.parse_remove_chunk = function(event) {
         // This gets called whenever an event to remove my chunk comes in.
-        var chunk_to_remove = this.jqedit.find(".chunk").eq(event.position);
+        var chunk_to_remove = this.jqedit.find("[id=" + event.id + "]");
         chunk_to_remove.remove();
     }
 
     this.parse_split_chunk = function(event) {
         // Splits the event.position'th chunk at offset.
-        var chunk_to_split = this.jqedit.find(".chunk").eq(event.position);
+        var chunk_to_split = this.jqedit.find("[id=" + event.id + "]");
         var text = chunk_to_split.text();
         var before = $("<span class='chunk'></span>").text(text.slice(0, event.offset));
         var after = $("<span class='chunk'></span>").text(text.slice(event.offset));
         var uname = chunk_to_split.attr("author");
         var u = this.get_user_by_name(uname);
 
-        this.format_chunk(u, before);
-        this.format_chunk(u, after);
+        this.format_chunk(u, event.bid, before);
+        this.format_chunk(u, event.aid, after);
 
         after.insertAfter(chunk_to_split);
         before.insertBefore(chunk_to_split);
@@ -267,4 +267,5 @@ function gbDocument(docname) {
         // We've been destroyed! Best clean up our actions.
         pagehandler.removeDoc(this.name, $(".tablist"));
     }
+    
 }
