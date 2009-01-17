@@ -153,7 +153,6 @@ function gbDocument(docname) {
         var newchunk = $("<span class='chunk'></span>").text(event.text);
         // Get the position we want to insert at
         var pos = event.position - 1;
-        console.log(pos);
         // HACK: Are we at the beginning?
         if (pos == -1) {
             // If so, add it at the very beginning.
