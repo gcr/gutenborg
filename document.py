@@ -46,6 +46,12 @@ class Document:
         """
         return user in self.subscribed_users
 
+    def chunk_exists(self, id):
+        """
+        Returns true if we know about the chunk (it's in the document)
+        """
+        return id in self.seq_id
+
     def send_event(self, event):
         """
         Sends an event to every subscribed user
@@ -118,19 +124,20 @@ class Document:
         Appends the chunk to the chunk after ID. (Use 0 to specify the start
         of the document.)
         """
-        # Store the text in our object
-        self.content[self.next_id] = {"author": user, "text": text}
-        if (id == 0):
-            # The user wanted this chunk to go at the beginning.
-            self.seq_id.insert(0, self.next_id)
-        else:
-            # Insert it just after the chunk with ID id
-            self.seq_id.insert(self.seq_id.index(id)+1, self.next_id)
-            
-        # Let everyone know
-        self.send_event({"type": "new_chunk", "author": user.get_state(), "id": id, "new_id":self.next_id, "text": text})
-        # And increment self.next_id
-        self.next_id += 1
+        if (self.chunk_exists(id) or id == 0):
+            # Store the text in our object
+            self.content[self.next_id] = {"author": user, "text": text}
+            if (id == 0):
+                # The user wanted this chunk to go at the beginning.
+                self.seq_id.insert(0, self.next_id)
+            else:
+                # Insert it just after the chunk with ID id
+                self.seq_id.insert(self.seq_id.index(id)+1, self.next_id)
+
+            # Let everyone know
+            self.send_event({"type": "new_chunk", "author": user.get_state(), "id": id, "new_id":self.next_id, "text": text})
+            # And increment self.next_id
+            self.next_id += 1
 
     def replace_chunk(self, user, text, id):
         """
@@ -138,56 +145,59 @@ class Document:
         and author. Note to client: This can change the author, so be prepared
         for that! It will NOT, however, change the ID.
         """
-        # Replace the chunk
-        self.content[id] = {"author":user, "text":text}
-        # Let everyone know
-        self.send_event({"type": "replace_chunk", "author": user.get_state(), "id": id, "text": text})
+        if self.chunk_exists(id):
+            # Replace the chunk
+            self.content[id] = {"author":user, "text":text}
+            # Let everyone know
+            self.send_event({"type": "replace_chunk", "author": user.get_state(), "id": id, "text": text})
 
     def remove_chunk(self, user, id):
         """
         Poof's the chunk with ID id so it no longer exists.
         """
-        # Delete the chunk
-        del self.content[id]
-        self.seq_id.remove(id)
-        # Let everyone know
-        self.send_event({"type": "remove_chunk", "id": id})
+        if self.chunk_exists(id):
+            # Delete the chunk
+            del self.content[id]
+            self.seq_id.remove(id)
+            # Let everyone know
+            self.send_event({"type": "remove_chunk", "id": id})
 
     def split_chunk(self, id, offset):
         """
         Splits the chunk with ID id at offset into two chunks.
         """
-        # Get what we need to know
-        text = self.content[id]['text'];
-        user = self.content[id]['author'];
-        before = {"author": user, "text": text[:offset]}
-        after = {"author": user, "text": text[offset:]}
-        
-        # Claim our ids
-        bid = self.next_id
-        aid = self.next_id + 1
-        self.next_id += 2
+        if self.chunk_exists(id):
+            # Get what we need to know
+            text = self.content[id]['text'];
+            user = self.content[id]['author'];
+            before = {"author": user, "text": text[:offset]}
+            after = {"author": user, "text": text[offset:]}
 
-        # Add them to the dictionary
-        self.content[bid] = before
-        self.content[aid] = after
+            # Claim our ids
+            bid = self.next_id
+            aid = self.next_id + 1
+            self.next_id += 2
 
-        # and to our sequential list
-        p = self.seq_id.index(id)
-        self.seq_id.insert(p, aid)
-        self.seq_id.insert(p, bid)
+            # Add them to the dictionary
+            self.content[bid] = before
+            self.content[aid] = after
 
-        # Remove the old chunk (might want to be more graceful)
-        del self.content[id]
-        self.seq_id.remove(id)
+            # and to our sequential list
+            p = self.seq_id.index(id)
+            self.seq_id.insert(p, aid)
+            self.seq_id.insert(p, bid)
 
-        # and lastly tell everyone about it.
-        self.send_event({
-            "type": "split_chunk",
-            "id":id,
-            "aid":aid,
-            "bid":bid,
-            "offset": offset
-        })
+            # Remove the old chunk (might want to be more graceful)
+            del self.content[id]
+            self.seq_id.remove(id)
+
+            # and lastly tell everyone about it.
+            self.send_event({
+                "type": "split_chunk",  # The event type
+                "id":id,                # The id of the chunk to split
+                "aid":aid,              # The id of the new chunk after offset
+                "bid":bid,              # The id of the new chunk before offset
+                "offset": offset        # The string position to split
+            })
 
 
