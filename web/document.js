@@ -39,6 +39,7 @@ function gbDocument(docname) {
     }
 
     this.resync = function() {
+        this.disable_editing();
         // Asks the server to resync us.
         $.get("resync_doc", {"doc_name":this.name});
     }
