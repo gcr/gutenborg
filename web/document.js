@@ -92,7 +92,14 @@ function gbDocument(docname) {
         // FILTHY IE and Chrome workaround
         if ($.browser.msie || $.browser.safari) {
             this.jqedit.keydown(function(event) {
-                if (event.which == 8 || event.which == 46) {
+                // Detects Ctrl+V and stops it right here
+                // V = key 86
+                //alert(event.which + " " + event.ctrlKey);
+                if (event.which == 86 && event.ctrlKey) {
+                    event.preventDefault();
+                    return false;
+                }
+                if (event.keyCode == 8 || event.keyCode == 46) {
                     doc.keyevent(event);
                 }
             });
@@ -102,6 +109,14 @@ function gbDocument(docname) {
     this.keyevent = function(event) {
         // What to do when we get a keypress
         // See the flowchart here! http://www.gliffy.com/publish/1581922/
+        // Do we have an arrow key?
+        // event.keycode:
+        // 37,38,39,40 arrow keys.
+        // 35, 36 for home and end.
+        
+        if (event.keyCode <= 40 && event.keyCode >= 35) {
+            return true;
+        }
         // First, stop our event!
         event.preventDefault(); // Quick! Stop that man before he does something silly!
         // First decision: Is it a cursor?
