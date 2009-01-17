@@ -87,11 +87,22 @@ function gbDocument(docname) {
         // Save the document object
         doc = this;
         this.jqedit.keypress(function(event) {
-            // What to do when we got a key
-            event.preventDefault();
-            alert("Which:" + event.which +", letter: " +
-                String.fromCharCode(event.charCode));
+            doc.keyevent(event);
         });
+        // FILTHY IE workaround
+        if ($.browser.msie) {
+            this.jqedit.keydown(function(event) {
+                if (event.which == 8 || event.which == 46) {
+                    doc.keyevent(event);
+                }
+            });
+        }
+    }
+
+    this.keyevent = function(event) {
+        // What to do when we get a keypress
+        alert(event.which);
+        event.preventDefault();
     }
 
     this.get_range = function() {
