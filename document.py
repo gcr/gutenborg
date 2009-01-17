@@ -134,3 +134,18 @@ class Document:
         # Let everyone know
         self.send_event({"type": "remove_chunk", "position": position})
 
+    def split_chunk(self, position, offset):
+        """
+        Splits the position'th chunk at OFFSET into two chunks.
+        """
+        text = self.content[position]['text'];
+        user = self.content[position]['author'];
+        before = {"author": user, "text": text[:offset]}
+        after = {"author": user, "text": text[offset:]}
+
+        del self.content[position]
+        self.content.insert(position, after)
+        self.content.insert(position, before)
+        self.send_event({"type": "split_chunk", "position": position, "offset": offset})
+
+

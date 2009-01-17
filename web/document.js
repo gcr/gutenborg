@@ -29,7 +29,17 @@ function gbDocument(docname) {
     this.jqulist = $("<br />"); // The jQuery user list reference inside the doctab.
     this.users = [];
     //this.content = [];
-    
+
+    this.get_user_by_name = function(n) {
+        // Returns the user object with name n
+        $.each(this.users, function(i, u) {
+            if (u.name == n) {
+                x = u;
+            }
+        });
+        return x;
+    }
+
     this.resync = function() {
         // Asks the server to resync us.
         $.get("resync_doc", {"doc_name":this.name});
@@ -53,7 +63,7 @@ function gbDocument(docname) {
             newchunk = $("<span class='chunk'></span>").text(c.text);
             // Applies foreground and background colors
             
-            doc.format_chunk(c, newchunk);
+            doc.format_chunk(c.author, newchunk);
             //alert(newchunk.html());
             doc.jqedit.append(newchunk);
         });
@@ -95,10 +105,10 @@ function gbDocument(docname) {
         }
     }
 
-    this.format_chunk = function (event, chunk) {
+    this.format_chunk = function (author, chunk) {
         // Applies formatting and background colors.
-        chunk.css({"background-color": event.author.color});
-        chunk.attr("author", event.author.name);
+        chunk.css({"background-color": author.color});
+        chunk.attr("author", author.name);
     }
 
     this.parse_new_chunk = function(event) {
@@ -117,20 +127,37 @@ function gbDocument(docname) {
         }
 
         // Clean up the colors
-        this.format_chunk(event, newchunk);
+        this.format_chunk(event.author, newchunk);
     }
 
     this.parse_replace_chunk = function(event) {
         // This gets called whenever an event to replace my chunk comes in.
         var chunk_to_replace = this.jqedit.find(".chunk").eq(event.position);
         chunk_to_replace.text(event.text);
-        this.format_chunk(event, chunk_to_replace);
+        this.format_chunk(event.author, chunk_to_replace);
     }
 
     this.parse_remove_chunk = function(event) {
         // This gets called whenever an event to remove my chunk comes in.
         var chunk_to_remove = this.jqedit.find(".chunk").eq(event.position);
         chunk_to_remove.remove();
+    }
+
+    this.parse_split_chunk = function(event) {
+        // Splits the event.position'th chunk at offset.
+        var chunk_to_split = this.jqedit.find(".chunk").eq(event.position);
+        var text = chunk_to_split.text();
+        var before = $("<span class='chunk'></span>").text(text.slice(0, event.offset));
+        var after = $("<span class='chunk'></span>").text(text.slice(event.offset));
+        var uname = chunk_to_split.attr("author");
+        var u = this.get_user_by_name(uname);
+
+        this.format_chunk(u, before);
+        this.format_chunk(u, after);
+
+        after.insertAfter(chunk_to_split);
+        before.insertBefore(chunk_to_split);
+        chunk_to_split.remove();
     }
 
     this.destroy = function() {

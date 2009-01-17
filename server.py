@@ -36,9 +36,10 @@ class Root:
         self.gb.add_document(self.DocTest)
         self.gb.add_document(self.DocTwo)
         self.u = User(self.gb, "Becca", "#00aaaa")
+        self.gb.add_user(self.u)
         self.DocTest.subscribe_user(self.u)
         self.DocTest.new_chunk(self.u, "Testing", 0)
-        self.DocTest.new_chunk(self.u, "Testing2", 1)
+        self.DocTest.new_chunk(self.u, "Hello World!", 1)
 #        self.u = User(self.gb, "Mike", "Blue")
 #        self.me = User(self.gb, "Becca", "Red")
 #        self.gb.add_user(self.u)
@@ -214,11 +215,24 @@ class Root:
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "p" in args, "Bad request- please supply document name, position, and text."
+        assert "doc_name" in args and "p" in args, "Bad request- please supply document name and position."
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
         d.remove_chunk(cherrypy.session['user'], int(args['p']))
     remove_chunk.exposed = True
+
+    def split_chunk(self, **args):
+        """
+        Splits the position'th chunk into two right at offset.
+        """
+        cherrypy.session.acquire_lock()
+        assert self.is_logged_in(), "User is not logged in"
+        assert "doc_name" in args and "p" in args and "o" in args, "Bad request- please supply document name, position, and offset."
+        d = self.gb.get_document_by_name(args['doc_name'])
+        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
+
+        d.split_chunk(int(args['p']), int(args['o']))
+    split_chunk.exposed = True
 
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")
