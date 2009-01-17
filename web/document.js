@@ -80,6 +80,7 @@ function gbDocument(docname) {
     this.disable_editing = function() {
         this.jqedit.attr("contentEditable", false);
         this.jqedit.unbind("keypress");
+        this.jqedit.unbind("keydown");
     }
 
     this.enable_editing = function() {
@@ -89,8 +90,8 @@ function gbDocument(docname) {
         this.jqedit.keypress(function(event) {
             doc.keyevent(event);
         });
-        // FILTHY IE workaround
-        if ($.browser.msie) {
+        // FILTHY IE and Chrome workaround
+        if ($.browser.msie || $.browser.safari) {
             this.jqedit.keydown(function(event) {
                 if (event.which == 8 || event.which == 46) {
                     doc.keyevent(event);
@@ -101,8 +102,16 @@ function gbDocument(docname) {
 
     this.keyevent = function(event) {
         // What to do when we get a keypress
-        alert(event.which);
-        event.preventDefault();
+        // See the flowchart here! http://www.gliffy.com/publish/1581922/
+        // First, stop our event!
+        event.preventDefault(); // Quick! Stop that man before he does something silly!
+        // First decision: Is it a cursor?
+        if (doc.is_cursor()) {
+
+        } else {
+            // Not a cursor
+            alert("TODO: Handle selections");
+        }
     }
 
     this.get_range = function() {
