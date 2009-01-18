@@ -162,42 +162,77 @@ class Document:
             # Let everyone know
             self.send_event({"type": "remove_chunk", "id": id})
 
-    def split_chunk(self, id, offset):
+    def split_chunk(self, newuser, id, offset, newtext):
         """
-        Splits the chunk with ID id at offset into two chunks.
+        Splits the chunk with ID id at offset into two chunks, and changes
+        the chunk right in the middle to have the new text and author.
+        Before:
+        bob's chunk
+        After:
+        beginning of bob's chunk, Alice's chunk, end of bob's chunk
         """
         if self.chunk_exists(id):
             # Get what we need to know
-            text = self.content[id]['text'];
-            user = self.content[id]['author'];
-            before = {"author": user, "text": text[:offset]}
-            after = {"author": user, "text": text[offset:]}
-
+            oldtext = self.content[id]['text'];
+            olduser = self.content[id]['author'];
+            before = {"author": olduser, "text": oldtext[:offset]}
+            after = {"author": olduser, "text": oldtext[offset:]}
+            center = {"author": newuser, "text": newtext}
+            
             # Claim our ids
             bid = self.next_id
             aid = self.next_id + 1
-            self.next_id += 2
-
+            cid = self.next_id + 2
+            self.next_id += 3
+            
             # Add them to the dictionary
             self.content[bid] = before
             self.content[aid] = after
-
+            self.content[cid] = center
+            
             # and to our sequential list
             p = self.seq_id.index(id)
-            self.seq_id.insert(p, aid)
+            self.seq_id.insert(p+1, aid)
             self.seq_id.insert(p, bid)
-
-            # Remove the old chunk (might want to be more graceful)
-            del self.content[id]
-            self.seq_id.remove(id)
-
+            self.seq_id[p] = cid # Store our center chunk
+            
             # and lastly tell everyone about it.
             self.send_event({
                 "type": "split_chunk",  # The event type
-                "id":id,                # The id of the chunk to split
-                "aid":aid,              # The id of the new chunk after offset
-                "bid":bid,              # The id of the new chunk before offset
-                "offset": offset        # The string position to split
+                "id":id,                # The id of the old chunk to split
+                "aid":aid,              # The id of the chunk after offset
+                "bid":bid,              # The id of the chunk before offset
+                "cid":cid,              # The id of the new center chunk
+                "offset": offset,       # The string position to split
+                "text": newtext,        # The text that should go in the center
+                "author": newuser.get_state() # The new author
             })
-
-
+            # If you understood this function, you are awesome.
+        
+    def insert_in_chunk(self, id, offset, text):
+        """
+        Adds something to the part of the chunk with ID id
+        """
+        oldtext = self.content[id]['text']
+        newtext = oldtext[:offset] + text + oldtext[offset:]
+        self.content[id]['text'] = newtext
+        self.send_event({
+            "type": "insert_in_chunk",
+            "id": id,
+            "offset": offset,
+            "text": text
+        })
+        
+    def delete_in_chunk(self, id, begin, end):
+        """
+        Removes the part of chunk from begin to end
+        """
+        oldtext = self.content[id]['text']
+        newtext = oldtext[:begin] + oldtext[end:]
+        self.content[id]['text'] = newtext
+        self.send_event({
+            "type": "delete_in_chunk",
+            "id": id,
+            "begin": begin,
+            "end": end
+        })

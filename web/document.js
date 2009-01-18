@@ -372,9 +372,29 @@ function gbDocument(docname) {
 
         after.insertAfter(chunk_to_split);
         before.insertBefore(chunk_to_split);
-        chunk_to_split.remove();
+        
+        chunk_to_split.text(event.text);
+        this.format_chunk(event.author, event.cid, chunk_to_split);
     }
 
+    this.parse_insert_in_chunk = function(event) {
+        // Inserts event.text into the chunk at event.offset
+        var chunk = this.jqedit.find("[id=" + event.id + "]");
+        var text = chunk.text();
+        var newtext = text.slice(0, event.offset) +
+            event.text +
+            text.slice(event.offset);
+        chunk.text(newtext);
+    }
+    this.parse_delete_in_chunk = function(event) {
+        // Deletes text from the chunk from event.begin to event.end
+        var chunk = this.jqedit.find("[id=" + event.id + "]");
+        var text = chunk.text();
+        var newtext = text.slice(0, event.begin) +
+            text.slice(event.end);
+        chunk.text(newtext);
+    }
+    
     this.destroy = function() {
         // We've been destroyed! Best clean up our actions.
         pagehandler.removeDoc(this.name, $(".tablist"));
