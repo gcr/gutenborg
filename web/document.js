@@ -89,7 +89,8 @@ function gbDocument(docname) {
         this.jqedit.keypress(function(event) {
             doc.keyevent(event);
         });
-        // FILTHY IE and Chrome workaround
+
+        // IE and chrome don't catch special keys like backspace and delete
         if ($.browser.msie || $.browser.safari) {
             this.jqedit.keydown(function(event) {
                 // Detects Ctrl+V and stops it right here
@@ -111,7 +112,7 @@ function gbDocument(docname) {
         // See the flowchart here! http://www.gliffy.com/publish/1581922/
         // Do we have an arrow key?
         // event.keycode:
-        // 37,38,39,40 arrow keys.
+        // 37, 38, 39, 40 are arrow keys.
         // 35, 36 for home and end.
         
         if (event.keyCode <= 40 && event.keyCode >= 35) {
@@ -119,41 +120,101 @@ function gbDocument(docname) {
         }
         // First, stop our event!
         event.preventDefault(); // Quick! Stop that man before he does something silly!
+        alert(this.get_start_offset());
         // First decision: Is it a cursor?
-        if (doc.is_cursor()) {
-
+        if (this.is_cursor()) {
+            //console.log(window.getSelection().getRangeAt(0).startContainer);//.innerHTML);
+            //alert(doc.get_start_node().text());
         } else {
             // Not a cursor
             alert("TODO: Handle selections");
         }
     }
 
-    this.get_range = function() {
-        // Returns a range object
+    this.get_selection = function() {
+        // Returns the browser's internal selection object
         var userSelection;
         if (window.getSelection) {
             userSelection = window.getSelection();
         }
         else if (document.selection) { // should come last; Opera!
-            userSelection = document.selection.createRange();
+            userSelection = document.selection;
         }
         return userSelection;
+    }
+
+    this.get_range = function() {
+        // Gets a range object from the selection.
+        // Lovingly copied from TinyMCE
+        var s = this.get_selection();
+        return s.rangeCount > 0 ? s.getRangeAt(0) : (s.createRange ? s.createRange() : window.document.createRange());
+    }
+
+    this.get_start_node = function() {
+        // Returns the DOM element of the node the cursor is in.
+        // Thanks to TinyMCE for this code! HUGS AND SWEETUMS.
+        var range = this.get_range(), e;
+        if ($.browser.msie) {
+				if (range.item)
+					return range.item(0);
+				range = range.duplicate();
+				range.collapse(1);
+				e = range.parentElement();
+                /*
+				if (e && e.nodeName == 'BODY')
+					return e.firstChild;
+                    */
+			} else {
+                e = range.startContainer;
+			}
+            var c = $(e).closest(".chunk");
+            // TODO: What if we're not inside a chunk?
+            return c
+    }
+
+    this.get_start_offset = function () {
+        // Get the number of characters before the start of the selection.
+        // Thanks, TinyMCE
+        var range = this.get_range();
+        if ($.browser.msie) {
+            // IE support
+            // Text selection
+            c = -0xFFFFFF; // ooooh, magic
+            tr = document.body.createTextRange(); // New blank range
+            
+            begin = range.duplicate(); // Copy our old range (used for finding start node)
+            begin.collapse(1); // Collapse our copy to just a cursor
+
+            tr.moveToElementText(begin.parentElement()); // Makes our range encompass the element in the beginning
+            tr.collapse(); // Collapse our fake range to the left of the cursor
+            bp = Math.abs(tr.move('character', c)); // Moves our stinkin' cursor to the beginning of the page.
+            
+            // Confused yet? Me too.
+            // The idea is: if we know how many characters from the beginning of the page
+            // to the start of the element and we know how many characters from
+            // the beginning of the page is to the cursor, then we know how many
+            // characters from the element to the selection.
+
+            // So let's find that second value.
+            tr = range.duplicate(); // Copy our old range (re-uses variables here)
+            tr.collapse(); // Collapse it to just a cursor
+            sp = Math.abs(tr.move('character', c)); // Move this to the beginning of the document
+            return sp - bp; // And return our value.
+        } else {
+            // blindingly simple ;)
+            return range.startOffset;
+        }
     }
     
     this.is_cursor = function() {
         // Returns true if we have just a cursor, false if it's a selection
-        var range = this.get_range();
-        if (typeof range.text != 'undefined') {
-            // IE
-            selectedText = range.text;
-        } else {
-            // Firefox
-            selectedText = range.toString();
-        }/*
-        console.log(range);
-        console.log(selectedText);
-        console.log(selectedText.toString());*/
-        return (selectedText.length == 0)
+        // Lovingly copied from TinyMCE
+
+        var r = this.get_range(), s = this.get_selection();
+			if (!r || r.item) {
+                return false;
+            }
+			return r.boundingWidth == 0 || r.collapsed;
     }
 
     this.subscribed_user = function(u) {
