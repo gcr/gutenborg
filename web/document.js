@@ -143,20 +143,35 @@ function gbDocument(docname) {
                     // Cursor, Delete, At the end of a chunk
                     // END: Delete the beginning character from the
                     // next chunk if it exists
+                    var n = node.next();
+                    var id = n.attr("id");
+                    if (id) {
+                        // Only if it exists
+                        this.delete_in_chunk(id, 0, 1);
+                    }
                 } else {
                     // Cursor, Delete, Not at the end of a chunk
                     // END: Delete the character from this chunk
+                    // Cursor, Backspace, Not at the start of a chunk
+                    var id = node.attr("id");
+                    this.delete_in_chunk(id, offset, offset+1);
                 }
             } else {
                 // Neither backspace nor delete
                 // Next decision: Do we own the chunk?
-                if (($node).attrib("author") == session.myname) {
+                if ((node).attr("author") == session.myname) {
                     // Cursor, normal character, we own the node
                     // END: Insert the character into the node
+                    var c = String.fromCharCode(event.which);
+                    var id = node.attr("id");
+                    this.insert_in_chunk(id, offset, c);
                 } else {
                     // Cursor, normal character, we do not own the node
                     // END: Split the chunk in two, make the new chunk
                     // have the new text
+                    var c = String.fromCharCode(event.which);
+                    var id = node.attr("id");
+                    this.split_chunk(id, offset, c);
                 }
             }
         } else {
@@ -419,6 +434,22 @@ function gbDocument(docname) {
             "id": id,
             "b": begin,
             "e": end
+        })
+    }
+    this.insert_in_chunk= function(id, offset, text) {
+        $.get("insert_in_chunk", {
+            "doc_name": this.name,
+            "id": id,
+            "o": offset,
+            "t": text
+        })
+    }
+    this.split_chunk= function(id, offset, text) {
+        $.get("split_chunk", {
+            "doc_name": this.name,
+            "id": id,
+            "o": offset,
+            "t": text
         })
     }
     

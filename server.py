@@ -228,7 +228,7 @@ class Root:
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "id" in args and "o" in args and "t" in args, "Bad request- please supply document name, ID, offset, and text."
+        assert "doc_name" in args and "id" in args and "o" in args and "t" in args, "Bad request- please supply document name, chunk ID, offset, and text."
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
         
