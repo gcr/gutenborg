@@ -97,14 +97,15 @@ function gbDocument(docname) {
     }
 
     this.keyevent = function(event) {
+        alert("Hi");
         // What to do when we get a keypress
         // See the flowchart here! http://www.gliffy.com/publish/1581922/
         // Do we have an arrow key?
         // event.keycode:
         // 37, 38, 39, 40 are arrow keys.
         // 35, 36 for home and end.
-        
-        if (event.keyCode <= 40 && event.keyCode >= 35) {
+        // 12 for Opera's control key
+        if (event.keyCode <= 40 && event.keyCode >= 35 || event.keyCode == 12) {
             return true; // Arrow keys should still work.
         }
         
@@ -117,6 +118,11 @@ function gbDocument(docname) {
         if (this.is_cursor()) {
             // Get the node that the cursor is in
             var node = this.get_start_node();
+            if (typeof node.attr("id") == 'undefined') {
+                alert("TODO: Bug found! Your cursor is not inside a chunk."+
+                      "Please click on the part of the document you want to edit.");
+                return false;
+            }
             // Next decision: Is it backspace or delete?
             if (event.keyCode == 8) {
                 // It was backspace
@@ -130,11 +136,13 @@ function gbDocument(docname) {
                         t = p.text();
                         // Only if it exists
                         this.delete_in_chunk(id, t.length-1, t.length);
-                    }
+                        return false;
+                    } else {return false;}
                 } else {
                     // Cursor, Backspace, Not at the start of a chunk
                     var id = node.attr("id");
                     this.delete_in_chunk(id, offset-1, offset);
+                    return false;
                 }
             } else if (event.keyCode == 46) {
                 // It was delete
@@ -148,6 +156,7 @@ function gbDocument(docname) {
                     if (id) {
                         // Only if it exists
                         this.delete_in_chunk(id, 0, 1);
+                        return false;
                     }
                 } else {
                     // Cursor, Delete, Not at the end of a chunk
@@ -155,6 +164,7 @@ function gbDocument(docname) {
                     // Cursor, Backspace, Not at the start of a chunk
                     var id = node.attr("id");
                     this.delete_in_chunk(id, offset, offset+1);
+                    return false;
                 }
             } else {
                 // Neither backspace nor delete
@@ -165,6 +175,7 @@ function gbDocument(docname) {
                     var c = String.fromCharCode(event.which);
                     var id = node.attr("id");
                     this.insert_in_chunk(id, offset, c);
+                    return false;
                 } else {
                     // Cursor, normal character, we do not own the node
                     // END: Split the chunk in two, make the new chunk
@@ -172,12 +183,14 @@ function gbDocument(docname) {
                     var c = String.fromCharCode(event.which);
                     var id = node.attr("id");
                     this.split_chunk(id, offset, c);
+                    return false;
                 }
             }
         } else {
             // Is a selection, not just a cursor.
             alert("TODO: Handle selections");
         }
+        alert("Boom");
     }
 
     this.get_selection = function() {
