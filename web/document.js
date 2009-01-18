@@ -116,17 +116,54 @@ function gbDocument(docname) {
         // 35, 36 for home and end.
         
         if (event.keyCode <= 40 && event.keyCode >= 35) {
-            return true;
+            return true; // Arrow keys should still work.
         }
+        
         // First, stop our event!
         event.preventDefault(); // Quick! Stop that man before he does something silly!
-        alert(this.get_start_offset());
+        // Save the offset
+        var offset = this.get_start_offset();
+        
         // First decision: Is it a cursor?
         if (this.is_cursor()) {
-            //console.log(window.getSelection().getRangeAt(0).startContainer);//.innerHTML);
-            //alert(doc.get_start_node().text());
+            // Get the node that the cursor is in
+            var node = this.get_start_node();
+            // Next decision: Is it backspace or delete?
+            if (event.keyCode == 8) {
+                // It was backspace
+                // Next decision: Are we at the start of a chunk?
+                if (offset == 0) {
+                    // Cursor, Backspace, At the start of a chunk
+                    // END: Delete the character from the last chunk
+                } else {
+                    // Cursor, Backspace, Not at the start of a chunk
+                    // END: Just delete our character
+                }
+            } else if (event.keyCode == 46) {
+                // It was delete
+                // Next decision: Are we at the end of a chunk?
+                if (offset == node.text().length) {
+                    // Cursor, Delete, At the end of a chunk
+                    // END: Delete the beginning character from the
+                    // next chunk if it exists
+                } else {
+                    // Cursor, Delete, Not at the end of a chunk
+                    // END: Delete the character from this chunk
+                }
+            } else {
+                // Neither backspace nor delete
+                // Next decision: Do we own the chunk?
+                if (($node).attrib("author") == session.myname) {
+                    // Cursor, normal character, we own the node
+                    // END: Insert the character into the node
+                } else {
+                    // Cursor, normal character, we do not own the node
+                    // END: Split the chunk in two, make the new chunk
+                    // have the new text
+                }
+            }
         } else {
-            // Not a cursor
+            // Is a selection, not just a cursor.
             alert("TODO: Handle selections");
         }
     }
