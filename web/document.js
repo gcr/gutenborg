@@ -38,18 +38,7 @@ function gbDocument(docname) {
         return {"name": n, "color": c}
     }
 
-    this.resync = function() {
-        this.disable_editing();
-        // Asks the server to resync us.
-        $.get("resync_doc", {"doc_name":this.name});
-    }
 
-    this.parse_resync_event = function(data) {
-        // What happens when the server sends us a resync event?
-        this.users = data.users; // Copy users
-        pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
-        this.reset(data.content);
-    }
 
     this.reset = function(content) {
         // Save this document
@@ -329,6 +318,16 @@ function gbDocument(docname) {
         chunk.attr("color", author.color);
     }
 
+    //////////////////////////////////////////
+    // Events from the server
+    
+    this.parse_resync_event = function(data) {
+        // What happens when the server sends us a resync event?
+        this.users = data.users; // Copy users
+        pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
+        this.reset(data.content);
+    }
+
     this.parse_new_chunk = function(event) {
         // This gets called whenever an event for a new chunk comes in.
         var newchunk = $("<span class='chunk'></span>").text(event.text);
@@ -394,6 +393,15 @@ function gbDocument(docname) {
             text.slice(event.end);
         chunk.text(newtext);
     }
+    
+    //////////////////////////////////////////
+    // Requests to the server
+    this.resync = function() {
+        this.disable_editing();
+        // Asks the server to resync us.
+        $.get("resync_doc", {"doc_name":this.name});
+    }
+    
     
     this.destroy = function() {
         // We've been destroyed! Best clean up our actions.
