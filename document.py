@@ -151,7 +151,7 @@ class Document:
             # Let everyone know
             self.send_event({"type": "replace_chunk", "author": user.get_state(), "id": id, "text": text})
 
-    def remove_chunk(self, user, id):
+    def remove_chunk(self, id):
         """
         Poof's the chunk with ID id so it no longer exists.
         """
@@ -229,10 +229,14 @@ class Document:
         """
         oldtext = self.content[id]['text']
         newtext = oldtext[:begin] + oldtext[end:]
-        self.content[id]['text'] = newtext
-        self.send_event({
-            "type": "delete_in_chunk",
-            "id": id,
-            "begin": begin,
-            "end": end
-        })
+        if (len(newtext) == 0):
+            # This chunk is EMPTY! Delete it.
+            self.remove_chunk(id)
+        else:
+            self.content[id]['text'] = newtext
+            self.send_event({
+                "type": "delete_in_chunk",
+                "id": id,
+                "begin": begin,
+                "end": end
+            })

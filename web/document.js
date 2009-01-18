@@ -124,9 +124,17 @@ function gbDocument(docname) {
                 if (offset == 0) {
                     // Cursor, Backspace, At the start of a chunk
                     // END: Delete the character from the last chunk
+                    var p = node.prev();
+                    var id = p.attr("id");
+                    if (id) {
+                        t = p.text();
+                        // Only if it exists
+                        this.delete_in_chunk(id, t.length-1, t.length);
+                    }
                 } else {
                     // Cursor, Backspace, Not at the start of a chunk
-                    // END: Just delete our character
+                    var id = node.attr("id");
+                    this.delete_in_chunk(id, offset-1, offset);
                 }
             } else if (event.keyCode == 46) {
                 // It was delete
@@ -354,6 +362,7 @@ function gbDocument(docname) {
 
     this.parse_remove_chunk = function(event) {
         // This gets called whenever an event to remove my chunk comes in.
+        // TODO! The cursor must be set properly!
         var chunk_to_remove = this.jqedit.find("[id=" + event.id + "]");
         chunk_to_remove.remove();
     }
@@ -394,14 +403,24 @@ function gbDocument(docname) {
         chunk.text(newtext);
     }
     
+    
     //////////////////////////////////////////
     // Requests to the server
+    
     this.resync = function() {
         this.disable_editing();
         // Asks the server to resync us.
         $.get("resync_doc", {"doc_name":this.name});
     }
     
+    this.delete_in_chunk = function(id, begin, end) {
+        $.get("delete_in_chunk", {
+            "doc_name": this.name,
+            "id": id,
+            "b": begin,
+            "e": end
+        })
+    }
     
     this.destroy = function() {
         // We've been destroyed! Best clean up our actions.

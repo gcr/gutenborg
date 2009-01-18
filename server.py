@@ -218,7 +218,7 @@ class Root:
         assert "doc_name" in args and "id" in args, "Bad request- please supply document name and ID."
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-        d.remove_chunk(cherrypy.session['user'], int(args['id']))
+        d.remove_chunk(int(args['id']))
     remove_chunk.exposed = True
 
     def split_chunk(self, **args):
