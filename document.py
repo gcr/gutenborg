@@ -192,9 +192,9 @@ class Document:
             
             # and to our sequential list
             p = self.seq_id.index(id)
+            self.seq_id[p] = cid # Store our center chunk first
             self.seq_id.insert(p+1, aid)
             self.seq_id.insert(p, bid)
-            self.seq_id[p] = cid # Store our center chunk
             
             # and lastly tell everyone about it.
             self.send_event({
