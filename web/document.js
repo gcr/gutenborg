@@ -281,8 +281,8 @@ function gbDocument(docname) {
             r.collapse();
             r.move('character', offset);
         } else {
-            console.log(node);
-            console.log(offset);
+            //console.log(node);
+            //console.log(offset);
             r.setStart(node, offset);
             r.setEnd(node, offset);
         }
@@ -455,7 +455,7 @@ function gbDocument(docname) {
             text.slice(event.offset);
         chunk.text(newtext);
         
-        if (curnod.attr("id") == event.id && curpos >= event.offset) {
+        if (curnode.attr("id") == event.id && curpos >= event.offset) {
             // If our cursor needs to be moved
             this.set_cursor_offset(chunk, curpos + event.text.length);
         }
@@ -473,9 +473,13 @@ function gbDocument(docname) {
         if (curnode.attr("id") == event.id) {
             // The cursor should be moved
             if (curpos <= event.begin) {
+                this.set_cursor_offset(chunk, curpos); // Just restore it
+            } else if (curpos <= event.end) {
+                // Move it to the end
                 this.set_cursor_offset(chunk, event.begin);
-            } else if (curpos < event.end) {
-                this.set_cursor_offset(chunk, event.end - (event.end - event.begin));
+            } else {
+                // Move it to the offset + the end - the beginning
+                this.set_cursor_offset(chunk, curpos + (event.end - event.begin));
             }
         }
     }
