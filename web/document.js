@@ -97,7 +97,6 @@ function gbDocument(docname) {
     }
 
     this.keyevent = function(event) {
-        alert("Hi");
         // What to do when we get a keypress
         // See the flowchart here! http://www.gliffy.com/publish/1581922/
         // Do we have an arrow key?
@@ -105,7 +104,11 @@ function gbDocument(docname) {
         // 37, 38, 39, 40 are arrow keys.
         // 35, 36 for home and end.
         // 12 for Opera's control key
-        if (event.keyCode <= 40 && event.keyCode >= 35 || event.keyCode == 12) {
+        if (event.keyCode <= 40 && event.keyCode >= 35
+            || event.keyCode == 12
+            || (event.keyCode == 0 &&
+                event.charCode == 0 &&
+                event.which == 0)) {
             return true; // Arrow keys should still work.
         }
         
@@ -268,6 +271,23 @@ function gbDocument(docname) {
         }
     }
     
+    this.set_cursor_offset = function(node, offset) {
+        // This function, given a node and an offset, sets the cursor to there.
+        // TODO: Test in IE and Chrome please.
+        node = $(node).get(0).firstChild;
+        r = this.get_range();
+        if ($.browser.msie) {
+            r.moveToElementText(node);
+            r.collapse();
+            r.move('character', offset);
+        } else {
+            console.log(node);
+            console.log(offset);
+            r.setStart(node, offset);
+            r.setEnd(node, offset);
+        }
+    }
+    
     this.is_cursor = function() {
         // Returns true if we have just a cursor, false if it's a selection
         // Lovingly copied from TinyMCE
@@ -390,8 +410,13 @@ function gbDocument(docname) {
 
     this.parse_remove_chunk = function(event) {
         // This gets called whenever an event to remove my chunk comes in.
-        // TODO! The cursor must be set properly!
         var chunk_to_remove = this.jqedit.find("[id=" + event.id + "]");
+        var curnode = this.get_start_node();
+        
+        if (curnode.attr("id") == event.id) {
+            // Sets the cursor properly
+            this.set_cursor_offset(chunk_to_remove.next(), 0);
+        }
         chunk_to_remove.remove();
     }
 
@@ -399,6 +424,7 @@ function gbDocument(docname) {
         // Splits the event.position'th chunk at offset.
         var chunk_to_split = this.jqedit.find("[id=" + event.id + "]");
         var text = chunk_to_split.text();
+        var curpos = this.get_start_offset();
         var before = $("<span class='chunk'></span>").text(text.slice(0, event.offset));
         var after = $("<span class='chunk'></span>").text(text.slice(event.offset));
         var u = this.extract_user_from_chunk(chunk_to_split);
@@ -411,24 +437,47 @@ function gbDocument(docname) {
         
         chunk_to_split.text(event.text);
         this.format_chunk(event.author, event.cid, chunk_to_split);
+        // And reset the cursor if we need to
+        if (curpos = event.offset) {
+            this.set_cursor_offset(chunk_to_split, event.text.length);
+        }
     }
 
     this.parse_insert_in_chunk = function(event) {
         // Inserts event.text into the chunk at event.offset
         var chunk = this.jqedit.find("[id=" + event.id + "]");
         var text = chunk.text();
+        var curnode = this.get_start_node();
+        var curpos = this.get_start_offset(); // Get the cursor
+        
         var newtext = text.slice(0, event.offset) +
             event.text +
             text.slice(event.offset);
         chunk.text(newtext);
+        
+        if (curnod.attr("id") == event.id && curpos >= event.offset) {
+            // If our cursor needs to be moved
+            this.set_cursor_offset(chunk, curpos + event.text.length);
+        }
     }
     this.parse_delete_in_chunk = function(event) {
         // Deletes text from the chunk from event.begin to event.end
+        var curnode = this.get_start_node();
+        var curpos = this.get_start_offset();
         var chunk = this.jqedit.find("[id=" + event.id + "]");
         var text = chunk.text();
         var newtext = text.slice(0, event.begin) +
             text.slice(event.end);
         chunk.text(newtext);
+        
+        if (curnode.attr("id") == event.id) {
+            // The cursor should be moved
+            if (curpos <= event.begin) {
+                this.set_cursor_offset(chunk, event.begin);
+            } else if (curpos < event.end) {
+                this.set_cursor_offset(chunk, event.end - (event.end - event.begin));
+            }
+        }
     }
     
     
