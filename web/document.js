@@ -31,7 +31,7 @@ function gbDocument(docname) {
     this.state = 0;
     //this.content = [];
 
-    this.reset = function(content) {
+    this.reset = function(event) {
         // Resets the entire editor
         
         // Save this document
@@ -42,9 +42,11 @@ function gbDocument(docname) {
         // This clears everything and fills it with content.
         this.jqedit.empty();
         
-        this.jqedit.empty(content);
+        this.jqedit.text(event.content);
         
-        //this.enable_editing();
+        this.state = event.state;
+        
+        this.enable_editing();
     }
 
     this.disable_editing = function() {
@@ -72,6 +74,7 @@ function gbDocument(docname) {
                     return false;
                 }
                 if (event.keyCode == 8 || event.keyCode == 46) {
+                    // Delete + backspace
                     doc.keyevent(event);
                 }
             });
@@ -103,79 +106,43 @@ function gbDocument(docname) {
         if (this.is_cursor()) {
             // Get the node that the cursor is in
             var node = this.get_start_node();
-            if (typeof node.attr("id") == 'undefined') {
-                alert("TODO: Bug found! Your cursor is not inside a chunk."+
-                      "Please click on the part of the document you want to edit.");
-                return false;
-            }
+
             // Next decision: Is it backspace or delete?
             if (event.keyCode == 8) {
                 // It was backspace
-                // Next decision: Are we at the start of a chunk?
-                if (offset == 0) {
-                    // Cursor, Backspace, At the start of a chunk
-                    // END: Delete the character from the last chunk
-                    var p = node.prev();
-                    var id = p.attr("id");
-                    if (id) {
-                        t = p.text();
-                        // Only if it exists
-                        this.delete_in_chunk(id, t.length-1, t.length);
-                        return false;
-                    } else {return false;}
+                if (offset != 0) {
+                    // Cursor, backspace, not at the start
+                    // Delete the previous character.
+                    this.del(offset-1,offset);
                 } else {
-                    // Cursor, Backspace, Not at the start of a chunk
-                    var id = node.attr("id");
-                    this.delete_in_chunk(id, offset-1, offset);
+                    // Cursor, backspace, at the start.
+                    // Do absolutely nothing. Silly.
                     return false;
                 }
             } else if (event.keyCode == 46) {
                 // It was delete
-                // Next decision: Are we at the end of a chunk?
+                // Next decision: Are we at the end?
                 if (offset == node.text().length) {
-                    // Cursor, Delete, At the end of a chunk
-                    // END: Delete the beginning character from the
-                    // next chunk if it exists
-                    var n = node.next();
-                    var id = n.attr("id");
-                    if (id) {
-                        // Only if it exists
-                        this.delete_in_chunk(id, 0, 1);
-                        return false;
-                    }
+                    // Cursor, Delete, At the end
+                    // not very useful...
+                    return false;
                 } else {
-                    // Cursor, Delete, Not at the end of a chunk
+                    // Cursor, Delete, Not at the end
                     // END: Delete the character from this chunk
-                    // Cursor, Backspace, Not at the start of a chunk
-                    var id = node.attr("id");
-                    this.delete_in_chunk(id, offset, offset+1);
+                    this.del(offset, offset+1);
                     return false;
                 }
             } else {
-                // Neither backspace nor delete
-                // Next decision: Do we own the chunk?
-                if ((node).attr("author") == session.myname) {
-                    // Cursor, normal character, we own the node
-                    // END: Insert the character into the node
-                    var c = String.fromCharCode(event.which);
-                    var id = node.attr("id");
-                    this.insert_in_chunk(id, offset, c);
-                    return false;
-                } else {
-                    // Cursor, normal character, we do not own the node
-                    // END: Split the chunk in two, make the new chunk
-                    // have the new text
-                    var c = String.fromCharCode(event.which);
-                    var id = node.attr("id");
-                    this.split_chunk(id, offset, c);
-                    return false;
-                }
+                // Cursor, neither backspace nor delete
+                // END: Insert the text at the cursor
+                var c = String.fromCharCode(event.which);
+                this.ins(offset, c);
+                return false;
             }
         } else {
             // Is a selection, not just a cursor.
             alert("TODO: Handle selections");
         }
-        alert("Boom");
     }
 
     this.get_selection = function() {
@@ -214,7 +181,7 @@ function gbDocument(docname) {
 			} else {
                 e = range.startContainer;
 			}
-            var c = $(e).closest(".chunk");
+            var c = $(e).closest(".gb-editor");
             // TODO: What if we're not inside a chunk?
             return c
     }
@@ -318,14 +285,37 @@ function gbDocument(docname) {
         // What happens when the server sends us a resync event?
         this.users = data.users; // Copy users
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
-        this.reset(data.content);
+        this.reset(data);
     }
     this.parse_insert_event = function(event) {
-        alert("Insert, position: " + event.pos + ", text: " + event.text);
+        curpos = this.get_start_offset();
+        oldtext = this.jqedit.text();
+        newtext = oldtext.slice(0, event.pos) + event.text + oldtext.slice(event.pos);
+        this.jqedit.text(newtext);
+        
+        if (curpos >= event.pos) {
+            // Need to change the position
+            this.set_cursor_offset(this.jqedit, curpos + event.text.length);
+        }
+        
+        // Save state
         this.state++;
     }
+    
     this.parse_delete_event = function(event) {
-        alert("Delete, begin: " + event.begin + ", end: " + event.end);
+        curpos = this.get_start_offset();
+        oldtext = this.jqedit.text();
+        newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
+        this.jqedit.text(newtext);
+        
+        if (curpos > event.end) {
+            // Need to change the cursor
+            this.set_cursor_offset(this.jqedit, curpos - (event.end - event.begin));
+        } else if (curpos >= event.begin) {
+            this.set_cursor_offset(this.jqedit, event.begin);
+        } else {
+            this.set_cursor_offset(this.jqedit, curpos)
+        }
         this.state++;
     }
     
@@ -339,7 +329,7 @@ function gbDocument(docname) {
         $.get("resync_doc", {"doc_name":this.name});
     }
     
-    this.del = function(id, begin, end) {
+    this.del = function(begin, end) {
         $.get("remove", {
             "doc_name": this.name,
             "begin": begin,
@@ -347,11 +337,13 @@ function gbDocument(docname) {
             "s": this.state
         })
     }
-    this.ins = function(id, offset, text) {
+    
+    this.ins = function(offset, text) {
         $.get("insert", {
             "doc_name": this.name,
             "pos": offset,
-            "t": text
+            "t": text,
+            "s": this.state
         })
     }
     

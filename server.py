@@ -124,7 +124,6 @@ class Root:
         # Timeout all the users
         self.gb.timeout_users(20)
         return user.get_events(int(args['last']))
-        
     wait.exposed = True
 
     def subscribe_document(self, **args):
@@ -180,7 +179,8 @@ class Root:
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
         d.insert(cherrypy.session['user'], int(args['pos']), args['t'])
-        
+    insert.exposed = True
+    
     def remove(self, **args):
         """
         Deletes the text from the document
@@ -191,7 +191,8 @@ class Root:
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
         d.remove(cherrypy.session['user'], int(args['begin']), int(args['end']))
-
+    remove.exposed = True
+    
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")
     index.exposed = True
