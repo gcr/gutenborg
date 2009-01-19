@@ -127,6 +127,12 @@ session.handleEvent = function(event) {
         case "resync_doc":
             session.subscribed_docs[event.doc_name].parse_resync_event(event);
             break;
+        case "insert":
+            session.subscribed_docs[event.doc_name].parse_insert_event(event);
+            break;
+        case "delete":
+            session.subscribed_docs[event.doc_name].parse_delete_event(event);
+            break;
         default:
             alert("TODO: Unknown Event! Please see console.");
     }
