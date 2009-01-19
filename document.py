@@ -112,3 +112,20 @@ class Document:
             # And away she goes!
             user.add_event(e)
 
+    def insert(self, user, pos, text):
+        """
+        Inserts text into the document at pos
+        """
+        self.content = self.content[:pos] + text + self.content[pos:]
+        # Increment the state
+        self.state += 1
+        self.send_event({"type": "insert", "text": text, "pos": pos})
+
+    def remove(self, user, begin, end):
+        """
+        Removes text from the document from begin to end
+        """
+        self.content = self.content[:begin] + self.content[end:]
+        # Increment the state
+        self.state += 1
+        self.send_event({"type": "insert", "text": text, "pos": pos})
