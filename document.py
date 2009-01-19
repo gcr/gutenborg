@@ -87,13 +87,8 @@ class Document:
         for u in self.subscribed_users:
             r['users'].append(u.get_state())
             
-        r['content'] = []
-        for id in self.seq_id:
-            r['content'].append({
-                "text": self.content[id]['text'],
-                "author": self.content[id]['author'].get_state(),
-                "id": id
-            })
+        r['content'] = self.content;
+        r['state'] = self.state;
         return r
 
     def resync(self, user):
@@ -128,4 +123,4 @@ class Document:
         self.content = self.content[:begin] + self.content[end:]
         # Increment the state
         self.state += 1
-        self.send_event({"type": "insert", "text": text, "pos": pos})
+        self.send_event({"type": "remove", "begin": begin, "end": end})

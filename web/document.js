@@ -28,19 +28,12 @@ function gbDocument(docname) {
     this.jqdoctab = $("<br />") // The jQuery doctab.
     this.jqulist = $("<br />"); // The jQuery user list reference inside the doctab.
     this.users = [];
+    this.state = 0;
     //this.content = [];
 
-    this.extract_user_from_chunk = function(chunk) {
-        // Given a jQuery chunk object, extract a working user
-        // from it.
-        var c = $(chunk).attr("color");
-        var n = $(chunk).attr("author");
-        return {"name": n, "color": c}
-    }
-
-
-
     this.reset = function(content) {
+        // Resets the entire editor
+        
         // Save this document
         doc = this;
         
@@ -49,20 +42,9 @@ function gbDocument(docname) {
         // This clears everything and fills it with content.
         this.jqedit.empty();
         
-        $.each(content, function(index, c) {
-            newchunk = $("<span class='chunk'></span>").text(c.text);
-            // Applies foreground and background colors
-            
-            doc.format_chunk(c.author, c.id, newchunk);
-            //alert(newchunk.html());
-            doc.jqedit.append(newchunk);
-        });
-        /*
-        $(".chunk", this.jqedit).each(function (index, c) {
-            alert($(c).attr("author"));
-        });
-        */
-        this.enable_editing();
+        this.jqedit.empty(content);
+        
+        //this.enable_editing();
     }
 
     this.disable_editing = function() {
@@ -329,51 +311,6 @@ function gbDocument(docname) {
         }
     }
 
-    this.format_chunk = function (author, id, chunk) {
-        // Applies formatting and background colors.
-        chunk.attr("author", author.name);
-        chunk.attr("id", id)
-        // A couple functions copied from farbtastic.js, THANK YOU!
-        unpack = function(color) {
-            if (color.length == 7) {
-                return [parseInt('0x' + color.substring(1, 3)) / 255,
-                parseInt('0x' + color.substring(3, 5)) / 255,
-                parseInt('0x' + color.substring(5, 7)) / 255];
-            }
-            else if (color.length == 4) {
-                return [parseInt('0x' + color.substring(1, 2)) / 15,
-                parseInt('0x' + color.substring(2, 3)) / 15,
-                parseInt('0x' + color.substring(3, 4)) / 15];
-            }
-        }
-        rgbToHsl = function (rgb) {
-            var min, max, delta, h, s, l;
-            var r = rgb[0], g = rgb[1], b = rgb[2];
-            min = Math.min(r, Math.min(g, b));
-            max = Math.max(r, Math.max(g, b));
-            delta = max - min;
-            l = (min + max) / 2;
-            s = 0;
-            if (l > 0 && l < 1) {
-                s = delta / (l < 0.5 ? (2 * l) : (2 - 2 * l));
-            }
-            h = 0;
-                if (delta > 0) {
-                   if (max == r && max != g) h += (g - b) / delta;
-                   if (max == g && max != b) h += (2 + (b - r) / delta);
-                   if (max == b && max != r) h += (4 + (r - g) / delta);
-                   h /= 6;
-                }
-            return [h, s, l];
-        }
-
-        // Now, find our color!
-        brightness = rgbToHsl(unpack(author.color))[2];
-        chunk.css({"background-color": author.color,
-            "color": brightness > 0.5 ? '#000' : '#fff'});
-        chunk.attr("color", author.color);
-    }
-
     //////////////////////////////////////////
     // Events from the server
     
@@ -383,105 +320,13 @@ function gbDocument(docname) {
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
         this.reset(data.content);
     }
-
-    this.parse_new_chunk = function(event) {
-        // This gets called whenever an event for a new chunk comes in.
-        var newchunk = $("<span class='chunk'></span>").text(event.text);
-        id = event.id
-        // Do we want to put this at the beginning?
-        if (id == 0) {
-            // If so, add it at the very beginning.
-            newchunk.prependTo(this.jqedit);
-        } else {
-            // If not, insert it after the chunk with ID id.
-            newchunk.insertAfter(this.jqedit.find("[id=" + id + "]"));
-        }
-
-        // Clean up the colors
-        this.format_chunk(event.author, event.new_id, newchunk);
+    this.parse_insert_event = function(event) {
+        alert("Insert, position: " + event.pos + ", text: " + event.text);
+        this.state++;
     }
-
-    this.parse_replace_chunk = function(event) {
-        // This gets called whenever an event to replace my chunk comes in.
-        var chunk_to_replace = this.jqedit.find("[id=" + event.id + "]");
-        chunk_to_replace.text(event.text);
-        this.format_chunk(event.author, event.id, chunk_to_replace);
-    }
-
-    this.parse_remove_chunk = function(event) {
-        // This gets called whenever an event to remove my chunk comes in.
-        var chunk_to_remove = this.jqedit.find("[id=" + event.id + "]");
-        var curnode = this.get_start_node();
-        
-        if (curnode.attr("id") == event.id) {
-            // Sets the cursor properly
-            this.set_cursor_offset(chunk_to_remove.next(), 0);
-        }
-        chunk_to_remove.remove();
-    }
-
-    this.parse_split_chunk = function(event) {
-        // Splits the event.position'th chunk at offset.
-        var chunk_to_split = this.jqedit.find("[id=" + event.id + "]");
-        var text = chunk_to_split.text();
-        var curpos = this.get_start_offset();
-        var before = $("<span class='chunk'></span>").text(text.slice(0, event.offset));
-        var after = $("<span class='chunk'></span>").text(text.slice(event.offset));
-        var u = this.extract_user_from_chunk(chunk_to_split);
-
-        this.format_chunk(u, event.bid, before);
-        this.format_chunk(u, event.aid, after);
-
-        after.insertAfter(chunk_to_split);
-        before.insertBefore(chunk_to_split);
-        
-        chunk_to_split.text(event.text);
-        this.format_chunk(event.author, event.cid, chunk_to_split);
-        // And reset the cursor if we need to
-        if (curpos = event.offset) {
-            this.set_cursor_offset(chunk_to_split, event.text.length);
-        }
-    }
-
-    this.parse_insert_in_chunk = function(event) {
-        // Inserts event.text into the chunk at event.offset
-        var chunk = this.jqedit.find("[id=" + event.id + "]");
-        var text = chunk.text();
-        var curnode = this.get_start_node();
-        var curpos = this.get_start_offset(); // Get the cursor
-        
-        var newtext = text.slice(0, event.offset) +
-            event.text +
-            text.slice(event.offset);
-        chunk.text(newtext);
-        
-        if (curnode.attr("id") == event.id && curpos >= event.offset) {
-            // If our cursor needs to be moved
-            this.set_cursor_offset(chunk, curpos + event.text.length);
-        }
-    }
-    this.parse_delete_in_chunk = function(event) {
-        // Deletes text from the chunk from event.begin to event.end
-        var curnode = this.get_start_node();
-        var curpos = this.get_start_offset();
-        var chunk = this.jqedit.find("[id=" + event.id + "]");
-        var text = chunk.text();
-        var newtext = text.slice(0, event.begin) +
-            text.slice(event.end);
-        chunk.text(newtext);
-        
-        if (curnode.attr("id") == event.id) {
-            // The cursor should be moved
-            if (curpos <= event.begin) {
-                this.set_cursor_offset(chunk, curpos); // Just restore it
-            } else if (curpos <= event.end) {
-                // Move it to the end
-                this.set_cursor_offset(chunk, event.begin);
-            } else {
-                // Move it to the offset + the end - the beginning
-                this.set_cursor_offset(chunk, curpos + (event.end - event.begin));
-            }
-        }
+    this.parse_delete_event = function(event) {
+        alert("Delete, begin: " + event.begin + ", end: " + event.end);
+        this.state++;
     }
     
     
@@ -494,30 +339,22 @@ function gbDocument(docname) {
         $.get("resync_doc", {"doc_name":this.name});
     }
     
-    this.delete_in_chunk = function(id, begin, end) {
-        $.get("delete_in_chunk", {
+    this.del = function(id, begin, end) {
+        $.get("remove", {
             "doc_name": this.name,
-            "id": id,
-            "b": begin,
-            "e": end
+            "begin": begin,
+            "end": end,
+            "s": this.state
         })
     }
-    this.insert_in_chunk= function(id, offset, text) {
-        $.get("insert_in_chunk", {
+    this.ins = function(id, offset, text) {
+        $.get("insert", {
             "doc_name": this.name,
-            "id": id,
-            "o": offset,
+            "pos": offset,
             "t": text
         })
     }
-    this.split_chunk= function(id, offset, text) {
-        $.get("split_chunk", {
-            "doc_name": this.name,
-            "id": id,
-            "o": offset,
-            "t": text
-        })
-    }
+    
     
     this.destroy = function() {
         // We've been destroyed! Best clean up our actions.

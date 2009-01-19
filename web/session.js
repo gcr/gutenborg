@@ -90,7 +90,7 @@ session.handleEvent = function(event) {
      *
      *      Documents:
      * insert               TODO
-     * delete               TODO
+     * remove               TODO
      * subscribed_user
      * unsubscribed_user
      * resync_doc
@@ -130,7 +130,7 @@ session.handleEvent = function(event) {
         case "insert":
             session.subscribed_docs[event.doc_name].parse_insert_event(event);
             break;
-        case "delete":
+        case "remove":
             session.subscribed_docs[event.doc_name].parse_delete_event(event);
             break;
         default:
