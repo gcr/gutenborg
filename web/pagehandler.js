@@ -44,12 +44,26 @@ pagehandler.init = function() {
 
 pagehandler.drawLoginForm = function() {
     // Draws a new login form, assigns handlers.
+    // First, a little color packing function from farbtastic
+    // that packs colors.
+    pack = function (rgb) {
+        var r = Math.round(rgb[0] * 255);
+        var g = Math.round(rgb[1] * 255);
+        var b = Math.round(rgb[2] * 255);
+        return '#' + (r < 16 ? '0' : '') + r.toString(16) +
+               (g < 16 ? '0' : '') + g.toString(16) +
+            (b < 16 ? '0' : '') + b.toString(16);
+    }
+    
+    // Get a random color
+    var color = pack([Math.random(), Math.random(), Math.random()]);
+    
     if (! session.logged_in) {
         loginform = $("<div class='loginform'></div>").appendTo(".docarea");
         loginform.html("<b>You, sir are not logged in!</b> Please do so.<br />");
         loginform.append("<form id='loginform'>"
             + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
-            + "<tr><td>Color:</td><td><div class='colorpicker' /><input type='text' id='ucolor' value='#FF0000'/></td></tr>"
+            + "<tr><td>Color:</td><td><div class='colorpicker' /><input type='text' id='ucolor' value='" + color + "'/></td></tr>"
             + "<tr><td colspan=2><input type='submit' value='Log in' /></td></tr></table>"
             + "</form>");
         // Assign a colorpicker
