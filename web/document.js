@@ -97,6 +97,11 @@ function gbDocument(docname) {
             return true; // Arrow keys should still work.
         }
         
+        // Fix enter
+        if (event.which == 13) {
+            event.which = 10
+        }
+        
         // First, stop our event!
         event.preventDefault(); // Quick! Stop that man before he does something silly!
         // Save the offset
