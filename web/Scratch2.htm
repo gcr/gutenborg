@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<title>onKeyDown test</title>
+<script type="text/javascript" src="jquery-1.3.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$("#entertext").text("Hi\rthere");
+	$("#entertext").keypress(function(e) {
+		e.preventDefault();
+	});
+});
+</script>
+</head>
+<body>
+<h2>Firefox Enter Test</h2>
+
+<div id="entertext" style="white-space: pre;" contentEditable="true">Hello
+there!</div>
+</body>
+</html>

@@ -28,30 +28,12 @@ function gbDocument(docname) {
     this.jqdoctab = $("<br />") // The jQuery doctab.
     this.jqulist = $("<br />"); // The jQuery user list reference inside the doctab.
     this.users = [];
+    this.state = 0;
     //this.content = [];
 
-    this.extract_user_from_chunk = function(chunk) {
-        // Given a jQuery chunk object, extract a working user
-        // from it.
-        var c = $(chunk).attr("color");
-        var n = $(chunk).attr("author");
-        return {"name": n, "color": c}
-    }
-
-    this.resync = function() {
-        this.disable_editing();
-        // Asks the server to resync us.
-        $.get("resync_doc", {"doc_name":this.name});
-    }
-
-    this.parse_resync_event = function(data) {
-        // What happens when the server sends us a resync event?
-        this.users = data.users; // Copy users
-        pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
-        this.reset(data.content);
-    }
-
-    this.reset = function(content) {
+    this.reset = function(event) {
+        // Resets the entire editor
+        
         // Save this document
         doc = this;
         
@@ -60,19 +42,10 @@ function gbDocument(docname) {
         // This clears everything and fills it with content.
         this.jqedit.empty();
         
-        $.each(content, function(index, c) {
-            newchunk = $("<span class='chunk'></span>").text(c.text);
-            // Applies foreground and background colors
-            
-            doc.format_chunk(c.author, c.id, newchunk);
-            //alert(newchunk.html());
-            doc.jqedit.append(newchunk);
-        });
-        /*
-        $(".chunk", this.jqedit).each(function (index, c) {
-            alert($(c).attr("author"));
-        });
-        */
+        this.jqedit.text(event.content);
+        
+        this.state = event.state;
+        
         this.enable_editing();
     }
 
@@ -89,7 +62,9 @@ function gbDocument(docname) {
         this.jqedit.keypress(function(event) {
             doc.keyevent(event);
         });
-        // FILTHY IE and Chrome workaround
+
+        // IE and chrome don't catch special keys like backspace and delete
+        // TODO: IE and Chrome count #,$,%,& as special keys.
         if ($.browser.msie || $.browser.safari) {
             this.jqedit.keydown(function(event) {
                 // Detects Ctrl+V and stops it right here
@@ -100,6 +75,7 @@ function gbDocument(docname) {
                     return false;
                 }
                 if (event.keyCode == 8 || event.keyCode == 46) {
+                    // Delete + backspace
                     doc.keyevent(event);
                 }
             });
@@ -111,49 +87,199 @@ function gbDocument(docname) {
         // See the flowchart here! http://www.gliffy.com/publish/1581922/
         // Do we have an arrow key?
         // event.keycode:
-        // 37,38,39,40 arrow keys.
+        // 37, 38, 39, 40 are arrow keys.
         // 35, 36 for home and end.
-        
-        if (event.keyCode <= 40 && event.keyCode >= 35) {
-            return true;
+        // 12 for Opera's control key
+        if (event.keyCode <= 40 && event.keyCode >= 35
+            || event.keyCode == 12
+            || (event.keyCode == 0 &&
+                event.charCode == 0 &&
+                event.which == 0)) {
+            return true; // Arrow keys should still work.
         }
+        
+        // Fix enter
+        if (event.which == 13) {
+            event.which = 10
+        }
+        
         // First, stop our event!
         event.preventDefault(); // Quick! Stop that man before he does something silly!
+        
+        // Save the offset
+        var offset = this.get_start_offset();
+        
         // First decision: Is it a cursor?
-        if (doc.is_cursor()) {
+        if (this.is_cursor()) {
+            // Get the node that the cursor is in
+            var node = this.get_start_node();
 
+            // Next decision: Is it backspace or delete?
+            if (event.keyCode == 8) {
+                // It was backspace
+                if (offset != 0) {
+                    // Cursor, backspace, not at the start
+                    // Delete the previous character.
+                    this.del(offset-1,offset);
+                } else {
+                    // Cursor, backspace, at the start.
+                    // Do absolutely nothing. Silly.
+                    return false;
+                }
+            } else if (event.keyCode == 46) {
+                // It was delete
+                // Next decision: Are we at the end?
+                if (offset == node.text().length) {
+                    // Cursor, Delete, At the end
+                    // not very useful...
+                    return false;
+                } else {
+                    // Cursor, Delete, Not at the end
+                    // END: Delete the character from this chunk
+                    this.del(offset, offset+1);
+                    return false;
+                }
+            } else {
+                // Cursor, neither backspace nor delete
+                // Is it a printable character?
+                if ((event.which >= 65 && event.which <= 90) || // Cap letters
+                    (event.which >= 97 && event.which <= 120) || // Lower letters
+                    (event.which >= 48 && event.which <= 57) || // Numbers
+                    (event.which == 32) ||
+                    (event.which == 10)
+                    ) {
+                    // END: Insert the text at the cursor
+                    var c = String.fromCharCode(event.which);
+                    this.ins(offset, c);
+                    alert("Key allowed: charCode: " + event.which + ", char: " + String.fromCharCode(event.which));
+                    return false;
+                } else {
+                    // Not workable
+                    alert("Key suppressed: charCode: " + event.which + ", char: " + String.fromCharCode(event.which));
+                }
+            }
         } else {
-            // Not a cursor
+            // Is a selection, not just a cursor.
             alert("TODO: Handle selections");
         }
     }
 
-    this.get_range = function() {
-        // Returns a range object
+    this.get_selection = function() {
+        // Returns the browser's internal selection object
         var userSelection;
         if (window.getSelection) {
             userSelection = window.getSelection();
         }
         else if (document.selection) { // should come last; Opera!
-            userSelection = document.selection.createRange();
+            userSelection = document.selection;
         }
         return userSelection;
+    }
+
+    this.get_range = function() {
+        // Gets a range object from the selection.
+        // Lovingly copied from TinyMCE
+        var s = this.get_selection();
+        return s.rangeCount > 0 ? s.getRangeAt(0) : (s.createRange ? s.createRange() : window.document.createRange());
+    }
+
+    this.get_start_node = function() {
+        // Returns the DOM element of the node the cursor is in.
+        // Thanks to TinyMCE for this code! HUGS AND SWEETUMS.
+        var range = this.get_range(), e;
+        if ($.browser.msie) {
+				if (range.item)
+					return range.item(0);
+				range = range.duplicate();
+				range.collapse(1);
+				e = range.parentElement();
+                /*
+				if (e && e.nodeName == 'BODY')
+					return e.firstChild;
+                    */
+			} else {
+                e = range.startContainer;
+			}
+            var c = $(e).closest(".gb-editor");
+            // TODO: What if we're not inside a chunk?
+            return c
+    }
+
+    this.get_start_offset = function () {
+        // Get the number of characters before the start of the selection.
+        // Thanks, TinyMCE
+        var range = this.get_range();
+        if ($.browser.msie) {
+            // IE support
+            // Text selection
+            c = -0xFFFFFF; // ooooh, magic
+            tr = document.body.createTextRange(); // New blank range
+            
+            begin = range.duplicate(); // Copy our old range (used for finding start node)
+            begin.collapse(1); // Collapse our copy to just a cursor
+
+            tr.moveToElementText(begin.parentElement()); // Makes our range encompass the element in the beginning
+            tr.collapse(); // Collapse our fake range to the left of the cursor
+            bp = Math.abs(tr.move('character', c)); // Moves our stinkin' cursor to the beginning of the page.
+            
+            // Confused yet? Me too.
+            // The idea is: if we know how many characters from the beginning of the page
+            // to the start of the element and we know how many characters from
+            // the beginning of the page is to the cursor, then we know how many
+            // characters from the element to the selection.
+
+            // So let's find that second value.
+            tr = range.duplicate(); // Copy our old range (re-uses variables here)
+            tr.collapse(); // Collapse it to just a cursor
+            sp = Math.abs(tr.move('character', c)); // Move this to the beginning of the document
+            return sp - bp; // And return our value.
+        } else {
+            // blindingly simple ;)
+            return range.startOffset;
+        }
+    }
+    
+    this.set_cursor_offset = function(node, offset) {
+        // This function, given a node and an offset, sets the cursor to there.
+        // TODO: Test in IE and Chrome please.
+        node = $(node).get(0);
+        var r = this.get_range();
+        if ($.browser.msie) {
+			r.moveToElementText(this.jqedit.get(0));
+			r.collapse(true);
+			r.move('character', offset);
+            
+            // And after about two and a half hours of debugging and digging
+            // through the TinyMCE, FCKEdit, and my own source code,
+            // I finally find the single line of code that
+            // ensures this function works in IE.
+            
+            // Now, for your amazement, I present to you the object
+            // of my half-day-long search:
+            r.select();
+            // ^ BASK IN ITS AWESOMENESS
+            
+            // Surely I'm smarter than that.
+            
+        } else {
+            // firefox prefers text nodes
+            node = node.firstChild;
+            //console.log(node);
+            //console.log(offset);
+            r.setStart(node, offset);
+            r.setEnd(node, offset);
+        }
     }
     
     this.is_cursor = function() {
         // Returns true if we have just a cursor, false if it's a selection
-        var range = this.get_range();
-        if (typeof range.text != 'undefined') {
-            // IE
-            selectedText = range.text;
-        } else {
-            // Firefox
-            selectedText = range.toString();
-        }/*
-        console.log(range);
-        console.log(selectedText);
-        console.log(selectedText.toString());*/
-        return (selectedText.length == 0)
+        // Lovingly copied from TinyMCE
+
+        var r = this.get_range(), s = this.get_selection();
+			if (!r || r.item) {
+                return false;
+            }
+			return r.boundingWidth == 0 || r.collapsed;
     }
 
     this.subscribed_user = function(u) {
@@ -186,97 +312,76 @@ function gbDocument(docname) {
         }
     }
 
-    this.format_chunk = function (author, id, chunk) {
-        // Applies formatting and background colors.
-        chunk.attr("author", author.name);
-        chunk.attr("id", id)
-        // A couple functions copied from farbtastic.js, THANK YOU!
-        unpack = function(color) {
-            if (color.length == 7) {
-                return [parseInt('0x' + color.substring(1, 3)) / 255,
-                parseInt('0x' + color.substring(3, 5)) / 255,
-                parseInt('0x' + color.substring(5, 7)) / 255];
-            }
-            else if (color.length == 4) {
-                return [parseInt('0x' + color.substring(1, 2)) / 15,
-                parseInt('0x' + color.substring(2, 3)) / 15,
-                parseInt('0x' + color.substring(3, 4)) / 15];
-            }
-        }
-        rgbToHsl = function (rgb) {
-            var min, max, delta, h, s, l;
-            var r = rgb[0], g = rgb[1], b = rgb[2];
-            min = Math.min(r, Math.min(g, b));
-            max = Math.max(r, Math.max(g, b));
-            delta = max - min;
-            l = (min + max) / 2;
-            s = 0;
-            if (l > 0 && l < 1) {
-                s = delta / (l < 0.5 ? (2 * l) : (2 - 2 * l));
-            }
-            h = 0;
-                if (delta > 0) {
-                   if (max == r && max != g) h += (g - b) / delta;
-                   if (max == g && max != b) h += (2 + (b - r) / delta);
-                   if (max == b && max != r) h += (4 + (r - g) / delta);
-                   h /= 6;
-                }
-            return [h, s, l];
-        }
-
-        // Now, find our color!
-        brightness = rgbToHsl(unpack(author.color))[2];
-        chunk.css({"background-color": author.color,
-            "color": brightness > 0.5 ? '#000' : '#fff'});
-        chunk.attr("color", author.color);
+    //////////////////////////////////////////
+    // Events from the server
+    
+    this.parse_resync_event = function(data) {
+        // What happens when the server sends us a resync event?
+        this.users = data.users; // Copy users
+        pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
+        this.reset(data);
     }
-
-    this.parse_new_chunk = function(event) {
-        // This gets called whenever an event for a new chunk comes in.
-        var newchunk = $("<span class='chunk'></span>").text(event.text);
-        id = event.id
-        // Do we want to put this at the beginning?
-        if (id == 0) {
-            // If so, add it at the very beginning.
-            newchunk.prependTo(this.jqedit);
+    this.parse_insert_event = function(event) {
+        curpos = this.get_start_offset();
+        oldtext = this.jqedit.text();
+        newtext = oldtext.slice(0, event.pos) + event.text + oldtext.slice(event.pos);
+        this.jqedit.text(newtext);
+        
+        if (curpos >= event.pos) {
+            // Need to change the position
+            this.set_cursor_offset(this.jqedit, curpos + event.text.length);
+        }
+        
+        // Save state
+        this.state++;
+    }
+    
+    this.parse_delete_event = function(event) {
+        curpos = this.get_start_offset();
+        oldtext = this.jqedit.text();
+        newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
+        this.jqedit.text(newtext);
+        
+        if (curpos >= event.end) {
+            // Need to change the cursor)
+            this.set_cursor_offset(this.jqedit, curpos - (event.end - event.begin));
+        } else if (curpos >= event.begin) {
+            this.set_cursor_offset(this.jqedit, event.begin);
         } else {
-            // If not, insert it after the chunk with ID id.
-            newchunk.insertAfter(this.jqedit.find("[id=" + id + "]"));
+            this.set_cursor_offset(this.jqedit, curpos)
         }
-
-        // Clean up the colors
-        this.format_chunk(event.author, event.new_id, newchunk);
+        this.state++;
     }
-
-    this.parse_replace_chunk = function(event) {
-        // This gets called whenever an event to replace my chunk comes in.
-        var chunk_to_replace = this.jqedit.find("[id=" + event.id + "]");
-        chunk_to_replace.text(event.text);
-        this.format_chunk(event.author, event.id, chunk_to_replace);
+    
+    
+    //////////////////////////////////////////
+    // Requests to the server
+    
+    this.resync = function() {
+        this.disable_editing();
+        // Asks the server to resync us.
+        $.get("resync_doc", {"doc_name":this.name});
     }
-
-    this.parse_remove_chunk = function(event) {
-        // This gets called whenever an event to remove my chunk comes in.
-        var chunk_to_remove = this.jqedit.find("[id=" + event.id + "]");
-        chunk_to_remove.remove();
+    
+    this.del = function(begin, end) {
+        $.get("remove", {
+            "doc_name": this.name,
+            "begin": begin,
+            "end": end,
+            "s": this.state
+        })
     }
-
-    this.parse_split_chunk = function(event) {
-        // Splits the event.position'th chunk at offset.
-        var chunk_to_split = this.jqedit.find("[id=" + event.id + "]");
-        var text = chunk_to_split.text();
-        var before = $("<span class='chunk'></span>").text(text.slice(0, event.offset));
-        var after = $("<span class='chunk'></span>").text(text.slice(event.offset));
-        var u = this.extract_user_from_chunk(chunk_to_split);
-
-        this.format_chunk(u, event.bid, before);
-        this.format_chunk(u, event.aid, after);
-
-        after.insertAfter(chunk_to_split);
-        before.insertBefore(chunk_to_split);
-        chunk_to_split.remove();
+    
+    this.ins = function(offset, text) {
+        $.get("insert", {
+            "doc_name": this.name,
+            "pos": offset,
+            "t": text,
+            "s": this.state
+        })
     }
-
+    
+    
     this.destroy = function() {
         // We've been destroyed! Best clean up our actions.
         pagehandler.removeDoc(this.name, $(".tablist"));

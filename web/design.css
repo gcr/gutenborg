@@ -82,6 +82,7 @@ most of the time. */
     width: 100%;
     height: 100%;
     background-color: #ddd;
+    white-space: pre; /* Doesn't ignore whitespace */
 }
 /* The box that contains ALL documents */
 .alldoclistbox {

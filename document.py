@@ -23,11 +23,14 @@ class Document:
         self.name = name
         self.gutenborg = gutenborg
         self.author = author
-        self.next_id = 1 # We're storing unique chunk IDs here.
-        self.seq_id = [] # Stored like this in document order: [chunk id, chunk id, ...]
-        self.content = {} # Stored like this: {chunk id: {"text": String, "author": User}, ...}
+        self.content = ""
         self.subscribed_users = []
-
+        self.history = []
+        # History should be stored as a list of events like this:
+        # [ {"operation": "insert" or "remove"
+        # "begin": number, "end": number, "pos": number, and/or
+        # "text": string } ]
+        
     def __str__(self):
         return "<(Document) Name: " + self.name + ">"
 
@@ -46,12 +49,6 @@ class Document:
         """
         return user in self.subscribed_users
 
-    def chunk_exists(self, id):
-        """
-        Returns true if we know about the chunk (it's in the document)
-        """
-        return id in self.seq_id
-
     def send_event(self, event):
         """
         Sends an event to every subscribed user
@@ -67,7 +64,7 @@ class Document:
         Adds a user to the document's subscribed users list.
         """
         if self.is_subscribed(user):
-            #raise NameError, "This user is already subscribed to that document."
+            # raise NameError, "This user is already subscribed to that document."
             # Might be best to resync them instead.
             self.resync(user)
             return False
@@ -94,13 +91,8 @@ class Document:
         for u in self.subscribed_users:
             r['users'].append(u.get_state())
             
-        r['content'] = []
-        for id in self.seq_id:
-            r['content'].append({
-                "text": self.content[id]['text'],
-                "author": self.content[id]['author'].get_state(),
-                "id": id
-            })
+        r['content'] = self.content;
+        r['state'] = len(self.history);
         return r
 
     def resync(self, user):
@@ -119,85 +111,132 @@ class Document:
             # And away she goes!
             user.add_event(e)
 
-    def new_chunk(self, user, text, id):
+    def insert(self, user, pos, text, state):
         """
-        Appends the chunk to the chunk after ID. (Use 0 to specify the start
-        of the document.)
+        Inserts text into the document at pos
         """
-        if (self.chunk_exists(id) or id == 0):
-            # Store the text in our object
-            self.content[self.next_id] = {"author": user, "text": text}
-            if (id == 0):
-                # The user wanted this chunk to go at the beginning.
-                self.seq_id.insert(0, self.next_id)
-            else:
-                # Insert it just after the chunk with ID id
-                self.seq_id.insert(self.seq_id.index(id)+1, self.next_id)
+        # MANY THANKS TO Infinote for help with these transformations:
+        # http://gobby.0x539.de/trac/wiki/Infinote/Protocol
+        
+        # First, reach back in time and see what we should do
+        # Think of this like a "git rebase"- we want to rebase
+        # the NEW changes on top of the changes the person
+        # didn't know about so they don't have to worry about it.
+        # This has the side-effect of sending events with slightly different
+        # parameters than what you requested.
+        # For every event in our history after our state:
+        for e in self.history[state:]:
+            if (e['operation'] == "insert"):
+                # We gotta account for stuff that was inserted before our
+                # latest characters
+                if (e['pos'] <= pos):
+                    # The old stuff should push our new stuff forward.
+                    # Add the text length to the position
+                    pos += len(e['text'])
+            elif (e['operation'] == "delete"):
+                # Deleted text should be accounted for
+                if (pos >= e['end']):
+                    # Our new inserted text should be shifted to the left
+                    pos -= (e['end'] - e['begin'])
+                elif (pos >= e['begin']):
+                    # Right between what they deleted. Ha ha.
+                    # Our inserted text should be placed right at the
+                    # beginning of where they deleted
+                    pos = e['begin']
+        
+        # BY THIS POINT: Our changes should be applicable to the new
+        # version of the document. Silly client for not knowing better...
+            
+        # Then, take our new "pos" and help it along
+        self.content = self.content[:pos] + text + self.content[pos:]
+        
+        # Remember what we're doing
+        self.history.append({
+            "operation": "insert",
+            "user": user,
+            "text": text,
+            "pos": pos
+        });
+        # And send the event to everyone
+        self.send_event({
+            "type": "insert",
+            "user": user.get_state(),
+            "text": text,
+            "pos": pos,
+        })
 
-            # Let everyone know
-            self.send_event({"type": "new_chunk", "author": user.get_state(), "id": id, "new_id":self.next_id, "text": text})
-            # And increment self.next_id
-            self.next_id += 1
-
-    def replace_chunk(self, user, text, id):
+    def remove(self, user, begin, end, state):
         """
-        Replaces the chunk with ID's text and author with the specified text
-        and author. Note to client: This can change the author, so be prepared
-        for that! It will NOT, however, change the ID.
+        Removes text from the document from begin to end
         """
-        if self.chunk_exists(id):
-            # Replace the chunk
-            self.content[id] = {"author":user, "text":text}
-            # Let everyone know
-            self.send_event({"type": "replace_chunk", "author": user.get_state(), "id": id, "text": text})
-
-    def remove_chunk(self, user, id):
-        """
-        Poof's the chunk with ID id so it no longer exists.
-        """
-        if self.chunk_exists(id):
-            # Delete the chunk
-            del self.content[id]
-            self.seq_id.remove(id)
-            # Let everyone know
-            self.send_event({"type": "remove_chunk", "id": id})
-
-    def split_chunk(self, id, offset):
-        """
-        Splits the chunk with ID id at offset into two chunks.
-        """
-        if self.chunk_exists(id):
-            # Get what we need to know
-            text = self.content[id]['text'];
-            user = self.content[id]['author'];
-            before = {"author": user, "text": text[:offset]}
-            after = {"author": user, "text": text[offset:]}
-
-            # Claim our ids
-            bid = self.next_id
-            aid = self.next_id + 1
-            self.next_id += 2
-
-            # Add them to the dictionary
-            self.content[bid] = before
-            self.content[aid] = after
-
-            # and to our sequential list
-            p = self.seq_id.index(id)
-            self.seq_id.insert(p, aid)
-            self.seq_id.insert(p, bid)
-
-            # Remove the old chunk (might want to be more graceful)
-            del self.content[id]
-            self.seq_id.remove(id)
-
-            # and lastly tell everyone about it.
-            self.send_event({
-                "type": "split_chunk",  # The event type
-                "id":id,                # The id of the chunk to split
-                "aid":aid,              # The id of the new chunk after offset
-                "bid":bid,              # The id of the new chunk before offset
-                "offset": offset        # The string position to split
-            })
-
-
+        # First, reach back in time and rebase our delete on top of any
+        # other operations that took place without the client knowing about
+        # them.
+        for e in self.history[state:]:
+            if (e['operation'] == "insert"):
+                if (e['pos'] <= begin):
+                    # They inserted stuff before our delete. We should fix
+                    # that by shifting our beginning and ending to the right.
+                    begin += len(e['text'])
+                    end += len(e['text'])
+                elif (e['pos'] > begin and e['pos'] < end):
+                    # They inserted stuff that we're about to delete without
+                    # knowing.
+                    # TODO: Split into three operations:
+                    # Delete the first part
+                    # Let the second (inserted text) part live
+                    # Delete the third part
+                    # For now, just shift our ending up so we can delete it
+                    end += len(e['text'])
+            elif (e['operation'] == "delete"):
+                if (begin >= e['end']):
+                    # They deleted stuff before us! Oh dear.
+                    # Shift everything to the left.
+                    begin -= (e['end'] - e['begin'])
+                    end -= (e['end'] - e['begin'])
+                    
+                elif (e['begin'] <= begin and e['end'] >= end):
+                    # Their beginning is before ours
+                    # and their end is after ours
+                    # We shouldn't delete anything at all.
+                    end = e['begin']
+                elif (e['begin'] <= begin and e['end'] < end):
+                    # Theirs overlaps us! Old beginning is
+                    # before ours and old end is before ours.
+                    # Start deleting at the old beginning
+                    begin = e['begin']
+                    # And continue until this difference
+                    end -= (e['end'] - begin)
+                    
+                elif (e['begin'] > begin and e['end'] >= end):
+                    # Theirs overlaps us! Old beginning is
+                    # after ours and old end is after ours too.
+                    
+                    # Start deleting at our beginning
+                    # And continue to our end minus their beginning.
+                    end -= (end - e['begin'])
+                elif (e['begin'] > begin and e['end'] < end):
+                    # Their beginning is after ours and their
+                    # end is before ours
+                    
+                    # Start deleting at our position
+                    # And shift our end to the left
+                    end -= (e['end'] - e['begin'])
+                    
+                    
+                
+        self.content = self.content[:begin] + self.content[end:]
+        # Remember what we're doing
+        self.history.append({
+            "operation": "remove",
+            "user": user,
+            "begin": begin,
+            "end": end
+        });
+        # And send it to everyone
+        self.send_event({
+            "type": "remove",
+            "user": user.get_state(),
+            "begin": begin,
+            "end": end
+        })

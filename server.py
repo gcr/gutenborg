@@ -38,12 +38,9 @@ class Root:
         self.u = User(self.gb, "Becca", "#008888")
         self.gb.add_user(self.u)
         self.DocTest.subscribe_user(self.u)
-        self.DocTest.new_chunk(self.u, "Testing", 0)
-        self.DocTest.new_chunk(self.u, "Hello World!", 1)
-#        self.u = User(self.gb, "Mike", "Blue")
-#        self.me = User(self.gb, "Becca", "Red")
-#        self.gb.add_user(self.u)
-#        self.gb.add_user(self.me)
+        self.DocTest.insert(self.u, 0, "Testing ", 0)
+        self.DocTest.insert(self.u, 8, "Hello World!", 1)
+
     def quit(self):
         sys.exit();
     quit.exposed = True
@@ -127,7 +124,6 @@ class Root:
         # Timeout all the users
         self.gb.timeout_users(20)
         return user.get_events(int(args['last']))
-        
     wait.exposed = True
 
     def subscribe_document(self, **args):
@@ -172,68 +168,31 @@ class Root:
         d = self.gb.get_document_by_name(args['doc_name'])
         d.resync(user);
     resync_doc.exposed = True
-    # CONSIDERED HARMFUL! Use resync_doc() instead.
-    #def get_document_state(self, **args):
-    #    """
-    #    Gets the document's contents and userlist. Note that the requester does not need
-    #    to be logged in.
-    #    """
-    #    assert "doc_name" in args, "Document name required"
-    #    d = self.gb.get_document_by_name(args['doc_name'])
-    #    return json.write(d.get_state())
-    #get_document_state.exposed = True
-
-    def new_chunk(self, **args):
+    
+    def insert(self, **args):
         """
-        Adds a new chunk by the user into a certain document right after ID.
+        Inserts the text into the document
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "id" in args and "t" in args, "Bad request- please supply document name, ID of previous (0 if you want yours right at the beginning), and text."
+        assert "doc_name" in args and "pos" in args and "t" in args and "s" in args, "Bad request- please specify doc_name, pos (caret position), t (text), and s (state)"
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-
-        d.new_chunk(cherrypy.session['user'], args['t'], int(args['id']))
-    new_chunk.exposed = True
-
-    def replace_chunk(self, **args):
+        d.insert(cherrypy.session['user'], int(args['pos']), args['t'], int(args['s']))
+    insert.exposed = True
+    
+    def remove(self, **args):
         """
-        Replaces a chunk with the specified text.
+        Deletes the text from the document
         """
         cherrypy.session.acquire_lock()
         assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "id" in args and "t" in args, "Bad request- please supply document name, chunk ID, and text."
+        assert "doc_name" in args and "begin" in args and "end" in args and "s" in args, "Bad request- please specify doc_name, pos (caret position), t (text), and s (state)"
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-
-        d.replace_chunk(cherrypy.session['user'], args['t'], int(args['id']))
-    replace_chunk.exposed = True
-
-    def remove_chunk(self, **args):
-        """
-        Totally deletes a chunk.
-        """
-        cherrypy.session.acquire_lock()
-        assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "id" in args, "Bad request- please supply document name and position."
-        d = self.gb.get_document_by_name(args['doc_name'])
-        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-        d.remove_chunk(cherrypy.session['user'], int(args['id']))
-    remove_chunk.exposed = True
-
-    def split_chunk(self, **args):
-        """
-        Splits the position'th chunk into two right at offset.
-        """
-        cherrypy.session.acquire_lock()
-        assert self.is_logged_in(), "User is not logged in"
-        assert "doc_name" in args and "id" in args and "o" in args, "Bad request- please supply document name, ID, and offset."
-        d = self.gb.get_document_by_name(args['doc_name'])
-        assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-
-        d.split_chunk(int(args['id']), int(args['o']))
-    split_chunk.exposed = True
-
+        d.remove(cherrypy.session['user'], int(args['begin']), int(args['end']), int(args['s']))
+    remove.exposed = True
+    
     def index(self, **args):
         raise cherrypy.InternalRedirect("gb.htm")
     index.exposed = True
