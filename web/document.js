@@ -223,13 +223,16 @@ function gbDocument(docname) {
     this.set_cursor_offset = function(node, offset) {
         // This function, given a node and an offset, sets the cursor to there.
         // TODO: Test in IE and Chrome please.
-        node = $(node).get(0).firstChild;
+        node = $(node).get(0);
         r = this.get_range();
         if ($.browser.msie) {
-            r.moveToElementText(node);
-            r.collapse();
-            r.move('character', offset);
+            
+            //r.moveToElementText(document.body);
+            //r.collapse(true);
+            //r.moveStart('character', offset);
         } else {
+            // firefox prefers text nodes
+            node = node.firstChild;
             //console.log(node);
             //console.log(offset);
             r.setStart(node, offset);
@@ -308,8 +311,8 @@ function gbDocument(docname) {
         newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
         this.jqedit.text(newtext);
         
-        if (curpos > event.end) {
-            // Need to change the cursor
+        if (curpos >= event.end) {
+            // Need to change the cursor)
             this.set_cursor_offset(this.jqedit, curpos - (event.end - event.begin));
         } else if (curpos >= event.begin) {
             this.set_cursor_offset(this.jqedit, event.begin);
