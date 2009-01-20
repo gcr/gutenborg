@@ -6,8 +6,8 @@
 <script type="text/javascript">
 $(document).ready(function() {
 	$("#entertext").text("Hi\rthere");
-	$(document).keypress(function(e) {
-		alert(e.which);
+	$("#entertext").keypress(function(e) {
+		e.preventDefault();
 	});
 });
 </script>
@@ -15,7 +15,7 @@ $(document).ready(function() {
 <body>
 <h2>Firefox Enter Test</h2>
 
-<div id="entertext" style="white-space: pre;">Hello
+<div id="entertext" style="white-space: pre;" contentEditable="true">Hello
 there!</div>
 </body>
 </html>
