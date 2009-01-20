@@ -64,6 +64,7 @@ function gbDocument(docname) {
         });
 
         // IE and chrome don't catch special keys like backspace and delete
+        // TODO: IE and Chrome count #,$,%,& as special keys.
         if ($.browser.msie || $.browser.safari) {
             this.jqedit.keydown(function(event) {
                 // Detects Ctrl+V and stops it right here
@@ -104,6 +105,7 @@ function gbDocument(docname) {
         
         // First, stop our event!
         event.preventDefault(); // Quick! Stop that man before he does something silly!
+        
         // Save the offset
         var offset = this.get_start_offset();
         
@@ -139,10 +141,22 @@ function gbDocument(docname) {
                 }
             } else {
                 // Cursor, neither backspace nor delete
-                // END: Insert the text at the cursor
-                var c = String.fromCharCode(event.which);
-                this.ins(offset, c);
-                return false;
+                // Is it a printable character?
+                if ((event.which >= 65 && event.which <= 90) || // Cap letters
+                    (event.which >= 97 && event.which <= 120) || // Lower letters
+                    (event.which >= 48 && event.which <= 57) || // Numbers
+                    (event.which == 32) ||
+                    (event.which == 10)
+                    ) {
+                    // END: Insert the text at the cursor
+                    var c = String.fromCharCode(event.which);
+                    this.ins(offset, c);
+                    alert("Key allowed: charCode: " + event.which + ", char: " + String.fromCharCode(event.which));
+                    return false;
+                } else {
+                    // Not workable
+                    alert("Key suppressed: charCode: " + event.which + ", char: " + String.fromCharCode(event.which));
+                }
             }
         } else {
             // Is a selection, not just a cursor.
