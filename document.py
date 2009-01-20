@@ -25,16 +25,12 @@ class Document:
         self.author = author
         self.content = ""
         self.subscribed_users = []
-        self.state = 0
         self.history = []
         # History should be stored as a list of events like this:
         # [ {"operation": "insert" or "remove"
         # "begin": number, "end": number, "pos": number, and/or
         # "text": string } ]
-        # However, not every event should be recorded in history.
-        # Events that change self.state- and ONLY those events- should
-        # be recorded.
-
+        
     def __str__(self):
         return "<(Document) Name: " + self.name + ">"
 
@@ -96,7 +92,7 @@ class Document:
             r['users'].append(u.get_state())
             
         r['content'] = self.content;
-        r['state'] = self.state;
+        r['state'] = len(self.history);
         return r
 
     def resync(self, user):
@@ -119,20 +115,52 @@ class Document:
         """
         Inserts text into the document at pos
         """
-        # First, reach back in time and see what we should do
+        # MANY THANKS TO Infinote for help with these transformations:
+        # http://gobby.0x539.de/trac/wiki/Infinote/Protocol
         
+        # First, reach back in time and see what we should do
+        # Think of this like a "git rebase"- we want to rebase
+        # the NEW changes on top of the changes the person
+        # didn't know about so they don't have to worry about it.
+        # This has the side-effect of sending events with slightly different
+        # parameters than what you requested.
+        # For every event in our history after our state:
+        for e in self.history[state:]:
+            if (e['operation'] == "insert"):
+                # We gotta account for stuff that was inserted before our
+                # latest characters
+                if (e['pos'] <= pos):
+                    # The old stuff should push our new stuff forward.
+                    # Add the text length to the position
+                    pos += len(e['text'])
+            elif (e['operation'] == "delete"):
+                # Deleted text should be accounted for
+                if (pos >= e['end']):
+                    # Our new inserted text should be shifted to the left
+                    pos -= (e['end'] - e['begin'])
+                elif (pos >= e['begin']):
+                    # Right between what they deleted. Ha ha.
+                    # Our inserted text should be placed right at the
+                    # beginning of where they deleted
+                    pos = e['begin']
+        
+        # BY THIS POINT: Our changes should be applicable to the new
+        # version of the document. Silly client for not knowing better...
+            
+        # Then, take our new "pos" and help it along
         self.content = self.content[:pos] + text + self.content[pos:]
-        # Increment the state
-        self.state += 1
+        
+        # Remember what we're doing
         self.history.append({
             "operation": "insert",
             "user": user,
             "text": text,
             "pos": pos
         });
+        # And send the event to everyone
         self.send_event({
             "type": "insert",
-            "user": user,
+            "user": user.get_state(),
             "text": text,
             "pos": pos,
         })
@@ -141,13 +169,74 @@ class Document:
         """
         Removes text from the document from begin to end
         """
+        # First, reach back in time and rebase our delete on top of any
+        # other operations that took place without the client knowing about
+        # them.
+        for e in self.history[state:]:
+            if (e['operation'] == "insert"):
+                if (e['pos'] <= begin):
+                    # They inserted stuff before our delete. We should fix
+                    # that by shifting our beginning and ending to the right.
+                    begin += len(e['text'])
+                    end += len(e['text'])
+                elif (e['pos'] > begin and e['pos'] < end):
+                    # They inserted stuff that we're about to delete without
+                    # knowing.
+                    # TODO: Split into three operations:
+                    # Delete the first part
+                    # Let the second (inserted text) part live
+                    # Delete the third part
+                    # For now, just shift our ending up so we can delete it
+                    end += len(e['text'])
+            elif (e['operation'] == "delete"):
+                if (begin >= e['end']):
+                    # They deleted stuff before us! Oh dear.
+                    # Shift everything to the left.
+                    begin -= (e['end'] - e['begin'])
+                    end -= (e['end'] - e['begin'])
+                    
+                elif (e['begin'] <= begin and e['end'] >= end):
+                    # Their beginning is before ours
+                    # and their end is after ours
+                    # We shouldn't delete anything at all.
+                    end = e['begin']
+                elif (e['begin'] <= begin and e['end'] < end):
+                    # Theirs overlaps us! Old beginning is
+                    # before ours and old end is before ours.
+                    # Start deleting at the old beginning
+                    begin = e['begin']
+                    # And continue until this difference
+                    end -= (e['end'] - begin)
+                    
+                elif (e['begin'] > begin and e['end'] >= end):
+                    # Theirs overlaps us! Old beginning is
+                    # after ours and old end is after ours too.
+                    
+                    # Start deleting at our beginning
+                    # And continue to our end minus their beginning.
+                    end -= (end - e['begin'])
+                elif (e['begin'] > begin and e['end'] < end):
+                    # Their beginning is after ours and their
+                    # end is before ours
+                    
+                    # Start deleting at our position
+                    # And shift our end to the left
+                    end -= (e['end'] - e['begin'])
+                    
+                    
+                
         self.content = self.content[:begin] + self.content[end:]
-        # Increment the state
-        self.state += 1
+        # Remember what we're doing
         self.history.append({
             "operation": "remove",
             "user": user,
             "begin": begin,
             "end": end
         });
-        self.send_event({"type": "remove", "begin": begin, "end": end, "user": user})
+        # And send it to everyone
+        self.send_event({
+            "type": "remove",
+            "user": user.get_state(),
+            "begin": begin,
+            "end": end
+        })

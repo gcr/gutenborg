@@ -38,8 +38,8 @@ class Root:
         self.u = User(self.gb, "Becca", "#008888")
         self.gb.add_user(self.u)
         self.DocTest.subscribe_user(self.u)
-        self.DocTest.insert(self.u, 0, "Testing ")
-        self.DocTest.insert(self.u, 8, "Hello World!")
+        self.DocTest.insert(self.u, 0, "Testing ", 0)
+        self.DocTest.insert(self.u, 8, "Hello World!", 1)
 
     def quit(self):
         sys.exit();
