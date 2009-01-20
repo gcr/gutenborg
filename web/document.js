@@ -226,11 +226,22 @@ function gbDocument(docname) {
         node = $(node).get(0);
         var r = this.get_range();
         if ($.browser.msie) {
-            r = this.get_selection().createRange();
 			r.moveToElementText(this.jqedit.get(0));
 			r.collapse(true);
-			r.moveStart('character', 5);
-			r.moveEnd('character', 5);
+			r.move('character', offset);
+            
+            // And after about two and a half hours of debugging and digging
+            // through the TinyMCE, FCKEdit, and my own source code,
+            // I finally find the single line of code that
+            // ensures this function works in IE.
+            
+            // Now, for your amazement, I present to you the object
+            // of my half-day-long search:
+            r.select();
+            // ^ BASK IN ITS AWESOMENESS
+            
+            // Surely I'm smarter than that.
+            
         } else {
             // firefox prefers text nodes
             node = node.firstChild;
