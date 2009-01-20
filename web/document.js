@@ -224,12 +224,13 @@ function gbDocument(docname) {
         // This function, given a node and an offset, sets the cursor to there.
         // TODO: Test in IE and Chrome please.
         node = $(node).get(0);
-        r = this.get_range();
+        var r = this.get_range();
         if ($.browser.msie) {
-            
-            //r.moveToElementText(document.body);
-            //r.collapse(true);
-            //r.moveStart('character', offset);
+            r = this.get_selection().createRange();
+			r.moveToElementText(this.jqedit.get(0));
+			r.collapse(true);
+			r.moveStart('character', 5);
+			r.moveEnd('character', 5);
         } else {
             // firefox prefers text nodes
             node = node.firstChild;
