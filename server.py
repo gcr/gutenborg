@@ -178,7 +178,7 @@ class Root:
         assert "doc_name" in args and "pos" in args and "t" in args and "s" in args, "Bad request- please specify doc_name, pos (caret position), t (text), and s (state)"
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-        d.insert(cherrypy.session['user'], int(args['pos']), args['t'])
+        d.insert(cherrypy.session['user'], int(args['pos']), args['t'], int(args['s']))
     insert.exposed = True
     
     def remove(self, **args):
@@ -190,7 +190,7 @@ class Root:
         assert "doc_name" in args and "begin" in args and "end" in args and "s" in args, "Bad request- please specify doc_name, pos (caret position), t (text), and s (state)"
         d = self.gb.get_document_by_name(args['doc_name'])
         assert d.is_subscribed(cherrypy.session['user']), "You must be subscribed to this document to do that."
-        d.remove(cherrypy.session['user'], int(args['begin']), int(args['end']))
+        d.remove(cherrypy.session['user'], int(args['begin']), int(args['end']), int(args['s']))
     remove.exposed = True
     
     def index(self, **args):

@@ -26,6 +26,14 @@ class Document:
         self.content = ""
         self.subscribed_users = []
         self.state = 0
+        self.history = []
+        # History should be stored as a list of events like this:
+        # [ {"operation": "insert" or "remove"
+        # "begin": number, "end": number, "pos": number, and/or
+        # "text": string } ]
+        # However, not every event should be recorded in history.
+        # Events that change self.state- and ONLY those events- should
+        # be recorded.
 
     def __str__(self):
         return "<(Document) Name: " + self.name + ">"
@@ -60,7 +68,7 @@ class Document:
         Adds a user to the document's subscribed users list.
         """
         if self.is_subscribed(user):
-            #raise NameError, "This user is already subscribed to that document."
+            # raise NameError, "This user is already subscribed to that document."
             # Might be best to resync them instead.
             self.resync(user)
             return False
@@ -107,20 +115,39 @@ class Document:
             # And away she goes!
             user.add_event(e)
 
-    def insert(self, user, pos, text):
+    def insert(self, user, pos, text, state):
         """
         Inserts text into the document at pos
         """
+        # First, reach back in time and see what we should do
+        
         self.content = self.content[:pos] + text + self.content[pos:]
         # Increment the state
         self.state += 1
-        self.send_event({"type": "insert", "text": text, "pos": pos})
+        self.history.append({
+            "operation": "insert",
+            "user": user,
+            "text": text,
+            "pos": pos
+        });
+        self.send_event({
+            "type": "insert",
+            "user": user,
+            "text": text,
+            "pos": pos,
+        })
 
-    def remove(self, user, begin, end):
+    def remove(self, user, begin, end, state):
         """
         Removes text from the document from begin to end
         """
         self.content = self.content[:begin] + self.content[end:]
         # Increment the state
         self.state += 1
-        self.send_event({"type": "remove", "begin": begin, "end": end})
+        self.history.append({
+            "operation": "remove",
+            "user": user,
+            "begin": begin,
+            "end": end
+        });
+        self.send_event({"type": "remove", "begin": begin, "end": end, "user": user})
