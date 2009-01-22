@@ -69,13 +69,15 @@ function gbDocument(docname) {
             this.jqedit.keydown(function(event) {
                 // Detects Ctrl+V and stops it right here
                 // V = key 86
-                //alert(event.which + " " + event.ctrlKey);
                 if (event.which == 86 && event.ctrlKey) {
                     event.preventDefault();
                     return false;
                 }
-                if (event.keyCode == 8 || event.keyCode == 46) {
+                
+                if (event.keyCode == 8 || event.keyCode == 46 ||
+                    (event.which >= 51 && event.which <= 54)) {
                     // Delete + backspace
+                    // Also these characters: #, $, %, ^
                     doc.keyevent(event);
                 }
             });
