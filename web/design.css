@@ -4,6 +4,8 @@
 */
 body {
     font-family: sans-serif;
+	/*background-image: url('img/bg.jpg');*/
+	background-color: #888a85;
 }
 h1 {
     text-align: center;
@@ -17,42 +19,48 @@ h2 {
 
 /* Our wonderful login form */
 .loginform {
+	background-color: #eee;
+	color: #000;
+	border: solid 1px #4e9a06;
     margin-left: auto;
     margin-right: auto;
     margin-top: 3em;
-    border: solid 1px #800;
     width: 50%;
 }
 
 /* The list of documents */
 .tablist {
-    background-color: #dae3fe;
     position: absolute;
     width: 15em;
     top: 5em;
 }
 .tablist h3 {
+	text-align: right;
     margin-top: 0px;
     margin-bottom: 1em;
 }
 .tablist .opentab {
-    background-color: #a6fda6;
+    background-color: #73d216;
+	background-image: url('img/opentab-gradient.png');
+	background-position: bottom;
     padding-left: 40px;
 }
 .tablist .opentab:hover {
     background-color: #74f574;
 }
 .tablist .activetab {
-    background-color: #3bfd3b;
+    background-color: #74f574;
+	background-image: url('img/activetab-gradient.png');
+	background-position: bottom;
     font-weight: bold;
 }
 
 /* The active document's tab. Hidden
 most of the time. */
 .doctab {
-    border-left: solid 3px navy;
+    border-left: solid 3px #73d216;
     padding-left: 8px;
-    background-color: #fec5c5;
+    background-color: #fff;
 }
 .doctab h3 {
     margin-bottom: 0px;
@@ -68,8 +76,8 @@ most of the time. */
 
 /* Our document area */
 .docarea {
-    background-color: #fff;
-    border: solid 1px #000000;
+    background-color: #8ae234;
+	color: #fff;
     position: absolute;
     left: 15em;
     /*margin-left: 1em;*/
@@ -79,9 +87,13 @@ most of the time. */
 }
 /* Our lovely editor */
 .gb-editor {
-    width: 100%;
-    height: 100%;
-    background-color: #ddd;
+	margin-top: 2em;
+	margin-bottom: 3em;
+	height: 100%;
+	bottom: 1em;
+    background-color: #fff;
+	color: #000;
+	border: solid 1px #888;
     white-space: pre; /* Doesn't ignore whitespace */
 }
 /* The box that contains ALL documents */
