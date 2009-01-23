@@ -5,7 +5,9 @@ Pat K.        Major code suggestions and improvement, design help, sanity check
 Ivy T.        Design help
 Dana K.       Design help
 Lydia A.      Silliness
-Amanda H.     Design help
+Amanda H.     Design, UI, and major logo help.
 Stephen D.    Suggestions and ideas
+Neil F.       diff-patch-match JS library
 
 This project lovingly uses code from TinyMCE. Thanks, guys!
+We also use code from Google's diff-match-patch JS library, and we're required to tell you that their code is licensed under the Apache Software License. http://code.google.com/p/google-diff-match-patch/
