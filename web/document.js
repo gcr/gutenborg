@@ -51,119 +51,15 @@ function gbDocument(docname) {
 
     this.disable_editing = function() {
         this.jqedit.attr("contentEditable", false);
-        this.jqedit.unbind("keypress");
-        this.jqedit.unbind("keydown");
+        //this.jqedit.unbind("keypress");
+        //this.jqedit.unbind("keydown");
     }
 
     this.enable_editing = function() {
         this.jqedit.attr("contentEditable", true);
         // Save the document object
         doc = this;
-        this.jqedit.keypress(function(event) {
-            doc.keyevent(event);
-        });
-
-        // IE and chrome don't catch special keys like backspace and delete
-        // TODO: IE and Chrome count #,$,%,& as special keys.
-        if ($.browser.msie || $.browser.safari) {
-            this.jqedit.keydown(function(event) {
-                // Detects Ctrl+V and stops it right here
-                // V = key 86
-                if (event.which == 86 && event.ctrlKey) {
-                    event.preventDefault();
-                    return false;
-                }
-                
-                if (event.keyCode == 8 || event.keyCode == 46 ||
-                    (event.which >= 51 && event.which <= 54)) {
-                    // Delete + backspace
-                    // Also these characters: #, $, %, ^
-                    doc.keyevent(event);
-                }
-            });
-        }
-    }
-
-    this.keyevent = function(event) {
-        // What to do when we get a keypress
-        // See the flowchart here! http://www.gliffy.com/publish/1581922/
-        // Do we have an arrow key?
-        // event.keycode:
-        // 37, 38, 39, 40 are arrow keys.
-        // 35, 36 for home and end.
-        // 12 for Opera's control key
-        if (event.keyCode <= 40 && event.keyCode >= 35
-            || event.keyCode == 12
-            || (event.keyCode == 0 &&
-                event.charCode == 0 &&
-                event.which == 0)) {
-            return true; // Arrow keys should still work.
-        }
         
-        // Fix enter
-        if (event.which == 13) {
-            event.which = 10
-        }
-        
-        // First, stop our event!
-        event.preventDefault(); // Quick! Stop that man before he does something silly!
-        
-        // Save the offset
-        var offset = this.get_start_offset();
-        
-        // First decision: Is it a cursor?
-        if (this.is_cursor()) {
-            // Get the node that the cursor is in
-            var node = this.get_start_node();
-
-            // Next decision: Is it backspace or delete?
-            if (event.keyCode == 8) {
-                // It was backspace
-                if (offset != 0) {
-                    // Cursor, backspace, not at the start
-                    // Delete the previous character.
-                    this.del(offset-1,offset);
-                } else {
-                    // Cursor, backspace, at the start.
-                    // Do absolutely nothing. Silly.
-                    return false;
-                }
-            } else if (event.keyCode == 46) {
-                // It was delete
-                // Next decision: Are we at the end?
-                if (offset == node.text().length) {
-                    // Cursor, Delete, At the end
-                    // not very useful...
-                    return false;
-                } else {
-                    // Cursor, Delete, Not at the end
-                    // END: Delete the character from this chunk
-                    this.del(offset, offset+1);
-                    return false;
-                }
-            } else {
-                // Cursor, neither backspace nor delete
-                // Is it a printable character?
-                if ((event.which >= 65 && event.which <= 90) || // Cap letters
-                    (event.which >= 97 && event.which <= 120) || // Lower letters
-                    (event.which >= 48 && event.which <= 57) || // Numbers
-                    (event.which == 32) ||
-                    (event.which == 10)
-                    ) {
-                    // END: Insert the text at the cursor
-                    var c = String.fromCharCode(event.which);
-                    this.ins(offset, c);
-                    alert("Key allowed: charCode: " + event.which + ", char: " + String.fromCharCode(event.which));
-                    return false;
-                } else {
-                    // Not workable
-                    alert("Key suppressed: charCode: " + event.which + ", char: " + String.fromCharCode(event.which));
-                }
-            }
-        } else {
-            // Is a selection, not just a cursor.
-            alert("TODO: Handle selections");
-        }
     }
 
     this.get_selection = function() {
