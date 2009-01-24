@@ -92,7 +92,7 @@ class Document:
             r['users'].append(u.get_state())
             
         r['content'] = self.content;
-        r['state'] = len(self.history);
+        r['sstate'] = len(self.history);
         return r
 
     def resync(self, user):
@@ -111,7 +111,7 @@ class Document:
             # And away she goes!
             user.add_event(e)
 
-    def insert(self, user, pos, text, state):
+    def insert(self, user, pos, text, sstate):
         """
         Inserts text into the document at pos
         """
@@ -125,7 +125,7 @@ class Document:
         # This has the side-effect of sending events with slightly different
         # parameters than what you requested.
         # For every event in our history after our state:
-        for e in self.history[state:]:
+        for e in self.history[sstate:]:
             if (e['operation'] == "insert"):
                 # We gotta account for stuff that was inserted before our
                 # latest characters
@@ -165,14 +165,14 @@ class Document:
             "pos": pos,
         })
 
-    def remove(self, user, begin, end, state):
+    def remove(self, user, begin, end, sstate):
         """
         Removes text from the document from begin to end
         """
         # First, reach back in time and rebase our delete on top of any
         # other operations that took place without the client knowing about
         # them.
-        for e in self.history[state:]:
+        for e in self.history[sstate:]:
             if (e['operation'] == "insert"):
                 if (e['pos'] <= begin):
                     # They inserted stuff before our delete. We should fix

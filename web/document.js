@@ -29,7 +29,8 @@ function gbDocument(docname) {
     this.jqulist = $("<br />"); // The jQuery user list reference inside the doctab.
     this.users = [];
     this.content = "";
-    this.state = 0;
+    this.sstate = 0;
+    this.cstate = 0;
     this.dmp = new diff_match_patch();
     this.timer = 0;
     
@@ -50,7 +51,7 @@ function gbDocument(docname) {
         this.jqedit.text(event.content);
         this.content = event.content;
         
-        this.state = event.state;
+        this.sstate = event.sstate;
         
         this.enable_editing();
     }
@@ -109,7 +110,7 @@ function gbDocument(docname) {
                     break;
                 case DIFF_DELETE:
                     // Ask the server to delete a bit of text there
-                    this.send_del(pos, d[i][1].length);
+                    this.send_del(pos, pos+d[i][1].length);
                     break;
             }
             // And add the length of our text to pos so we can see where we are
@@ -202,7 +203,6 @@ function gbDocument(docname) {
     
     this.set_cursor_offset = function(node, offset) {
         // This function, given a node and an offset, sets the cursor to there.
-        // TODO: Test in IE and Chrome please.
         node = $(node).get(0);
         var r = this.get_range();
         if ($.browser.msie) {
@@ -300,7 +300,7 @@ function gbDocument(docname) {
         }
         
         // Save state
-        this.state++;
+        this.sstate++;
     }
     
     this.parse_delete_event = function(event) {
@@ -322,7 +322,7 @@ function gbDocument(docname) {
                 this.set_cursor_offset(this.jqedit, curpos)
             }
         }
-        this.state++;
+        this.sstate++;
     }
     
     
@@ -340,8 +340,10 @@ function gbDocument(docname) {
             "doc_name": this.name,
             "begin": begin,
             "end": end,
-            "s": this.state
+            "ss": this.sstate,
+            "cs": this.cstate
         })
+        this.cstate++
     }
     
     this.send_ins = function(offset, text) {
@@ -349,8 +351,10 @@ function gbDocument(docname) {
             "doc_name": this.name,
             "pos": offset,
             "t": text,
-            "s": this.state
+            "ss": this.sstate,
+            "cs": this.cstate
         })
+        this.cstate++;
     }
     
     
