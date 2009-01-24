@@ -94,7 +94,7 @@ function gbDocument(docname) {
         var newtext = this.jqedit.text();
         
         // Compares the diff
-        var d = this.dmp.diff_main(newtext, this.content);
+        var d = this.dmp.diff_main(this.content,newtext);
         
         //
         console.log(newtext);
