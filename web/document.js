@@ -68,7 +68,8 @@ function gbDocument(docname) {
         // Fix enter
         this.jqedit.keydown(function(e) {
             if (e.which == 13) {
-                // TODO: Ignore it
+                // TODO: Ignore enter, but we should change it so that
+                // it inserts a newline instead
                 e.preventDefault();
             }});
         this.jqedit.keyup(function() {doc.scan_for_changes()});
@@ -96,6 +97,7 @@ function gbDocument(docname) {
         // to this.content
         this.content = newtext;
     }
+    
     this.get_selection = function() {
         // Returns the browser's internal selection object
         var userSelection;
@@ -214,7 +216,10 @@ function gbDocument(docname) {
 			return r.boundingWidth == 0 || r.collapsed;
     }
 
-    this.subscribed_user = function(u) {
+    //////////////////////////////////////////
+    // Events from the server
+    
+    this.parse_subscribed_user = function(u) {
         // This gets called when we have another user coming up.
         // TODO: Make sure this function applies colors to the document correctly!
         // Only add the user if there isn't one already.
@@ -228,8 +233,7 @@ function gbDocument(docname) {
             pagehandler.drawNewUser(u, "user", this.jqulist);
         }
     }
-
-    this.unsubscribed_user = function(leavingUser) {
+    this.parse_unsubscribed_user = function(leavingUser) {
         // This function removes users from the user list. It does not touch the
         // document.
 
@@ -243,10 +247,6 @@ function gbDocument(docname) {
             }
         }
     }
-
-    //////////////////////////////////////////
-    // Events from the server
-    
     this.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
         this.users = data.users; // Copy users

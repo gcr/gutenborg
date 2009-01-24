@@ -112,7 +112,7 @@ session.handleEvent = function(event) {
                 // Hey sweet! We've been invited!
                 session.subscribed_user_myself(event);
             } else {
-                session.subscribed_docs[event.doc_name].subscribed_user(event.user);
+                session.subscribed_docs[event.doc_name].parse_subscribed_user(event.user);
             }
             break;
         case "unsubscribed_user":
@@ -121,7 +121,7 @@ session.handleEvent = function(event) {
                 session.subscribed_docs[event.doc_name].destroy();
                 delete session.subscribed_docs[event.doc_name];
             } else {
-                session.subscribed_docs[event.doc_name].unsubscribed_user(event.user);
+                session.subscribed_docs[event.doc_name].parse_unsubscribed_user(event.user);
             }
             break;
         case "resync_doc":
