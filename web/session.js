@@ -194,5 +194,5 @@ session.subscribed_user_myself = function(event) {
     pagehandler.drawNewDoc(session.subscribed_docs[event.doc_name], $(".tablist"));
     
     // Resync the document
-    session.subscribed_docs[event.doc_name].resync();
+    session.subscribed_docs[event.doc_name].send_resync();
 }

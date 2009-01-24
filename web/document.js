@@ -306,13 +306,13 @@ function gbDocument(docname) {
     //////////////////////////////////////////
     // Requests to the server
     
-    this.resync = function() {
+    this.send_resync = function() {
         this.disable_editing();
         // Asks the server to resync us.
         $.get("resync_doc", {"doc_name":this.name});
     }
     
-    this.del = function(begin, end) {
+    this.send_del = function(begin, end) {
         $.get("remove", {
             "doc_name": this.name,
             "begin": begin,
@@ -321,7 +321,7 @@ function gbDocument(docname) {
         })
     }
     
-    this.ins = function(offset, text) {
+    this.send_ins = function(offset, text) {
         $.get("insert", {
             "doc_name": this.name,
             "pos": offset,
