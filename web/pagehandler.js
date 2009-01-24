@@ -173,6 +173,8 @@ pagehandler.clearActive = function() {
         $(d.jqtab).click(function() {
             pagehandler.setActive(session.subscribed_docs[dname]);
         });
+        // And make it non-editable
+        d.disable_editing();
         // Now, hide our document itself
         $(d.jqedit).hide();
     });
@@ -192,7 +194,10 @@ pagehandler.setActive = function(d, tlist) {
     $(d.jqtab).unbind("click"); // Makes it so we can't click on this one'
     //$(tab).unbind("mouseover").unbind("mouseout"); // Unbinds hover- TODO: Doesn't work in IE6
     //$(tab).removeClass("hover");
-
+    
+    // Make it editable
+    d.enable_editing();
+    
     // Finally, show our document itself
     $(d.jqedit).show();
 }
