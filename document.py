@@ -182,6 +182,7 @@ class Document:
                 elif (e['pos'] > begin and e['pos'] < end):
                     # They inserted stuff that we're about to delete without
                     # knowing.
+                    # FIXME! THIS BREAKS CONCURRENCY BAD.
                     # TODO: Split into three operations:
                     # Delete the first part
                     # Let the second (inserted text) part live
