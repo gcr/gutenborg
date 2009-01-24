@@ -215,7 +215,8 @@ function gbDocument(docname) {
             }
 			return r.boundingWidth == 0 || r.collapsed;
     }
-
+    
+    
     //////////////////////////////////////////
     // Events from the server
     
@@ -247,12 +248,14 @@ function gbDocument(docname) {
             }
         }
     }
+    
     this.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
         this.users = data.users; // Copy users
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
         this.reset(data);
     }
+    
     this.parse_insert_event = function(event) {
         this.scan_for_changes();
         
