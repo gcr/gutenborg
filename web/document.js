@@ -31,6 +31,8 @@ function gbDocument(docname) {
     this.content = "";
     this.state = 0;
     this.dmp = new diff_match_patch();
+    this.timer = 0;
+    
     
     //this.content = [];
 
@@ -56,6 +58,7 @@ function gbDocument(docname) {
     this.disable_editing = function() {
         this.jqedit.attr("contentEditable", false);
         this.jqedit.unbind("keyup");
+        this.timer = window.clearInterval(this.timer);
         //this.jqedit.unbind("keypress");
         //this.jqedit.unbind("keydown");
     }
@@ -72,11 +75,15 @@ function gbDocument(docname) {
                 // it inserts a newline instead
                 e.preventDefault();
             }});
-        this.jqedit.keyup(function() {doc.scan_for_changes()});
+        //this.jqedit.keyup(function() {doc.scan_for_changes()});
+        this.timer = window.setInterval(function() {
+            doc.scan_for_changes();
+        },500);
     }
 
     this.scan_for_changes = function() {
         // Scans for changes
+        console.time("Changes");
         
         // First, define some constants
         var DIFF_DELETE = -1;
@@ -96,6 +103,7 @@ function gbDocument(docname) {
         // Now saves the latest version that we know about back
         // to this.content
         this.content = newtext;
+        console.timeEnd("Changes");
     }
     
     this.get_selection = function() {
@@ -325,6 +333,7 @@ function gbDocument(docname) {
     
     this.destroy = function() {
         // We've been destroyed! Best clean up our actions.
+        this.timer = window.clearInterval(this.timer);
         pagehandler.removeDoc(this.name, $(".tablist"));
     }
     
