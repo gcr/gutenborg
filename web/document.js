@@ -28,7 +28,10 @@ function gbDocument(docname) {
     this.jqdoctab = $("<br />") // The jQuery doctab.
     this.jqulist = $("<br />"); // The jQuery user list reference inside the doctab.
     this.users = [];
+    this.content = "";
     this.state = 0;
+    this.dmp = new diff_match_patch();
+    
     //this.content = [];
 
     this.reset = function(event) {
@@ -43,6 +46,7 @@ function gbDocument(docname) {
         this.jqedit.empty();
         
         this.jqedit.text(event.content);
+        this.content = event.content;
         
         this.state = event.state;
         
@@ -51,6 +55,7 @@ function gbDocument(docname) {
 
     this.disable_editing = function() {
         this.jqedit.attr("contentEditable", false);
+        this.jqedit.unbind("keyup");
         //this.jqedit.unbind("keypress");
         //this.jqedit.unbind("keydown");
     }
@@ -60,8 +65,37 @@ function gbDocument(docname) {
         // Save the document object
         doc = this;
         
+        // Fix enter
+        this.jqedit.keydown(function(e) {
+            if (e.which == 13) {
+                // TODO: Ignore it
+                e.preventDefault();
+            }});
+        this.jqedit.keyup(function() {doc.scan_for_changes()});
     }
 
+    this.scan_for_changes = function() {
+        // Scans for changes
+        
+        // First, define some constants
+        var DIFF_DELETE = -1;
+        var DIFF_INSERT = 1;
+        var DIFF_EQUAL = 0;
+        
+        // Remembers the new text so we only need to get it once
+        var newtext = this.jqedit.text();
+        
+        // Compares the diff
+        var d = this.dmp.diff_main(newtext, this.content);
+        
+        //
+        console.log(newtext);
+        console.log(d);
+        
+        // Now saves the latest version that we know about back
+        // to this.content
+        this.content = newtext;
+    }
     this.get_selection = function() {
         // Returns the browser's internal selection object
         var userSelection;
@@ -220,9 +254,12 @@ function gbDocument(docname) {
         this.reset(data);
     }
     this.parse_insert_event = function(event) {
+        this.scan_for_changes();
+        
         curpos = this.get_start_offset();
         oldtext = this.jqedit.text();
         newtext = oldtext.slice(0, event.pos) + event.text + oldtext.slice(event.pos);
+        this.content = newtext;
         this.jqedit.text(newtext);
         
         if (curpos >= event.pos) {
@@ -235,9 +272,12 @@ function gbDocument(docname) {
     }
     
     this.parse_delete_event = function(event) {
+        this.scan_for_changes();
+        
         curpos = this.get_start_offset();
         oldtext = this.jqedit.text();
         newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
+        this.content = newtext;
         this.jqedit.text(newtext);
         
         if (curpos >= event.end) {
