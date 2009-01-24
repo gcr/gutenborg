@@ -78,7 +78,7 @@ function gbDocument(docname) {
         //this.jqedit.keyup(function() {doc.scan_for_changes()});
         this.timer = window.setInterval(function() {
             doc.scan_for_changes();
-        },500);
+        },1000); // Edit this line to change the timeout
     }
 
     this.scan_for_changes = function() {
@@ -96,6 +96,25 @@ function gbDocument(docname) {
         // Compares the diff
         var d = this.dmp.diff_main(this.content,newtext);
         
+        // Go through each part of the diff and see what changed
+        var pos = 0;
+        for (var i=0; i<d.length; i++) {
+            switch (d[i][0]) {
+                case DIFF_EQUAL:
+                    // No special handling req'd
+                    break;
+                case DIFF_INSERT:
+                    // Ask the server to insert a bit of text there
+                    this.send_ins(pos, d[i][1]);
+                    break;
+                case DIFF_DELETE:
+                    // Ask the server to delete a bit of text there
+                    this.send_del(pos, d[i][1].length);
+                    break;
+            }
+            // And add the length of our text to pos so we can see where we are
+            pos += d[i][1].length;
+        };
         //
         console.log(newtext);
         console.log(d);
@@ -265,17 +284,19 @@ function gbDocument(docname) {
     }
     
     this.parse_insert_event = function(event) {
-        this.scan_for_changes();
-        
-        curpos = this.get_start_offset();
-        oldtext = this.jqedit.text();
-        newtext = oldtext.slice(0, event.pos) + event.text + oldtext.slice(event.pos);
-        this.content = newtext;
-        this.jqedit.text(newtext);
-        
-        if (curpos >= event.pos) {
-            // Need to change the position
-            this.set_cursor_offset(this.jqedit, curpos + event.text.length);
+        if (event.user.name != session.myname) {
+            this.scan_for_changes();
+            
+            curpos = this.get_start_offset();
+            oldtext = this.jqedit.text();
+            newtext = oldtext.slice(0, event.pos) + event.text + oldtext.slice(event.pos);
+            this.content = newtext;
+            this.jqedit.text(newtext);
+            
+            if (curpos >= event.pos) {
+                // Need to change the position
+                this.set_cursor_offset(this.jqedit, curpos + event.text.length);
+            }
         }
         
         // Save state
@@ -283,21 +304,23 @@ function gbDocument(docname) {
     }
     
     this.parse_delete_event = function(event) {
-        this.scan_for_changes();
-        
-        curpos = this.get_start_offset();
-        oldtext = this.jqedit.text();
-        newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
-        this.content = newtext;
-        this.jqedit.text(newtext);
-        
-        if (curpos >= event.end) {
-            // Need to change the cursor)
-            this.set_cursor_offset(this.jqedit, curpos - (event.end - event.begin));
-        } else if (curpos >= event.begin) {
-            this.set_cursor_offset(this.jqedit, event.begin);
-        } else {
-            this.set_cursor_offset(this.jqedit, curpos)
+        if (event.user.name != session.myname) {
+            this.scan_for_changes();
+            
+            curpos = this.get_start_offset();
+            oldtext = this.jqedit.text();
+            newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
+            this.content = newtext;
+            this.jqedit.text(newtext);
+            
+            if (curpos >= event.end) {
+                // Need to change the cursor)
+                this.set_cursor_offset(this.jqedit, curpos - (event.end - event.begin));
+            } else if (curpos >= event.begin) {
+                this.set_cursor_offset(this.jqedit, event.begin);
+            } else {
+                this.set_cursor_offset(this.jqedit, curpos)
+            }
         }
         this.state++;
     }
