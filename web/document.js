@@ -103,18 +103,20 @@ function gbDocument(docname) {
             switch (d[i][0]) {
                 case DIFF_EQUAL:
                     // No special handling req'd
+                    pos += d[i][1].length;
                     break;
                 case DIFF_INSERT:
                     // Ask the server to insert a bit of text there
                     this.send_ins(pos, d[i][1]);
+                    pos += d[i][1].length;
                     break;
                 case DIFF_DELETE:
                     // Ask the server to delete a bit of text there
                     this.send_del(pos, pos+d[i][1].length);
+                    // do not increment "pos" because we dun do anything to it
                     break;
             }
             // And add the length of our text to pos so we can see where we are
-            pos += d[i][1].length;
         };
         //
         console.log(newtext);
