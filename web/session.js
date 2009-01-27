@@ -41,7 +41,6 @@ session.getServerInfo = function(callback) {
     // then executes the callback.
     $.getJSON("info", function(data) {
         session.servername = data.name;
-        document.title = data.name; // Set the window title. Nice effect.
         session.servertag = data.tag;
         session.active_users = data.active_users;
         //session.dead_users = data.dead_users; // I don't need to care, do I?'

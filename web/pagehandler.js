@@ -26,6 +26,7 @@ pagehandler.init = function() {
     // Draws the page for the first time.
     $(".sname").text(session.servername);
     $(".stag").text(session.servertag);
+    document.title = session.servername; // Set the window title. Nice effect.
 
     // Draws the userlist and the doclist
     //pagehandler.drawUserList(session.active_users,"online", $(".userlist"));
@@ -36,6 +37,7 @@ pagehandler.init = function() {
     // a user is logged in, it seems more like a GUI issue.
     if (session.logged_in) {
             //pagehandler.drawMessageSubmitBox();
+            pagehandler.drawDocAreaHeaders();
         } else {
             // If we're not logged in, we want a login from.
             pagehandler.drawLoginForm();
@@ -86,6 +88,10 @@ pagehandler.drawLoginForm = function() {
     }
 }
 
+pagehandler.drawDocAreaHeaders = function() {
+    // This function adds the document headers to the docarea.
+    $("<h2 />").appendTo(".docarea").text("Welcome to " + session.servername);
+}
 pagehandler.drawUserList = function(users, cssclass, ulist) {
     // This function empties a user list. It then fills up the list
     // full of our users.
@@ -149,16 +155,16 @@ pagehandler.drawNewDoc = function(doc, tlist) {
     var doctab = $("<div class='doctab'>Users:</div>").insertAfter(newitem).hide();
     var ulist = $("<ul></ul>").appendTo(doctab);
     
-    // Close button - note that even though I'm adding it to newitem directly
-    // (which should only have the document text in it), this does NOT break
-    // $(newitem).text, so getting documents by name should still work.
+    // Close button (each document keeps track of its own tab in
+    // gbDocument.jqtab, so this won't hurt any)
     closebutton = $("<img style='margin-right: 16px; vertical-align: middle;' src='img/gtk-close.png' alt='Close'>").prependTo(newitem).click(function() {
         session.unsubscribeToDoc(doc.name)
     });
 
     // Build a new editor
     doc.jqedit = $("<div class='gb-editor'></div>").appendTo(".docarea");
-    
+    // silly firefox thang
+    doc.jqedit.attr("_moz_resizing", false);
     
     doc.jqdoctab = doctab; // Save the doctab
     doc.jqtab = newitem; // And also save the tab
@@ -174,6 +180,8 @@ pagehandler.removeDoc = function(dname, tlist) {
     $(session.subscribed_docs[dname].jqdoctab).fadeOut("slow", function(){$(this).remove();});
     $(session.subscribed_docs[dname].jqtab).fadeOut("slow", function(){$(this).remove();});
     $(session.subscribed_docs[dname].jqedit).remove();
+    $("docarea .h2").text("Welcome to " + session.name);
+    document.title = session.servername; // Window title
 }
 
 pagehandler.clearActive = function() {
@@ -189,6 +197,8 @@ pagehandler.clearActive = function() {
         });
         // Now, hide our document itself
         $(d.jqedit).hide();
+        $(".docarea h2").text("Welcome to " + session.servername);
+        document.title = session.servername; // Window title
     });
 }
 
@@ -206,7 +216,10 @@ pagehandler.setActive = function(d, tlist) {
     $(d.jqtab).unbind("click"); // Makes it so we can't click on this one'
     //$(tab).unbind("mouseover").unbind("mouseout"); // Unbinds hover- TODO: Doesn't work in IE6
     //$(tab).removeClass("hover");
-
+    
+    // Draw our header
+    $(".docarea h2").text(d.name);
+    document.title = d.name + " - " + session.servername; // Window title
     // Finally, show our document itself
     $(d.jqedit).show();
 }
