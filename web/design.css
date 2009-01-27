@@ -47,6 +47,7 @@ h2 {
 }
 .tablist .opentab:hover {
     background-color: #74f574;
+	/* TODO: Need some other indicator */
 }
 .tablist .activetab {
     background-color: #74f574;
@@ -87,13 +88,17 @@ most of the time. */
 }
 /* Our lovely editor */
 .gb-editor {
-	margin-top: 2em;
-	margin-bottom: 3em;
-	height: 100%;
+	position: fixed;
+	/* I'd use position: absolute, but it makes firefox give it resize
+	  handles, which isn't what I want. */
+	top: 7em;
 	bottom: 1em;
+	left: 15em;
+	right: 1em;
     background-color: #fff;
 	color: #000;
 	border: solid 1px #888;
+	overflow: scroll;
     white-space: pre; /* Doesn't ignore whitespace */
 }
 /* The box that contains ALL documents */
