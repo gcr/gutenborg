@@ -306,23 +306,20 @@ function gbDocument(docname) {
     }
     
     this.parse_delete_event = function(event) {
-        if (event.user.name != session.myname) {
-            this.scan_for_changes();
-            
-            curpos = this.get_start_offset();
-            oldtext = this.jqedit.text();
-            newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
-            this.content = newtext;
-            this.jqedit.text(newtext);
-            
-            if (curpos >= event.end) {
-                // Need to change the cursor)
-                this.set_cursor_offset(this.jqedit, curpos - (event.end - event.begin));
-            } else if (curpos >= event.begin) {
+        this.scan_for_changes();
+        
+        curpos = this.get_start_offset();
+        oldtext = this.jqedit.text();
+        newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
+        this.content = newtext;
+        this.jqedit.text(newtext);
+        if (curpos >= event.end) {
+            // Need to change the cursor)
+            this.set_cursor_offset(this.jqedit, curpos - (event.end - event.begin));
+        } else if (curpos >= event.begin) {
                 this.set_cursor_offset(this.jqedit, event.begin);
-            } else {
-                this.set_cursor_offset(this.jqedit, curpos)
-            }
+        } else {
+            this.set_cursor_offset(this.jqedit, curpos)
         }
         this.sstate++;
     }
