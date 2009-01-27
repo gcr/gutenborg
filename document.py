@@ -124,8 +124,11 @@ class Document:
         # didn't know about so they don't have to worry about it.
         # This has the side-effect of sending events with slightly different
         # parameters than what you requested.
-        # For every event in our history after our state:
-        for e in self.history[sstate:]:
+        
+        # For every operation in our history
+        # after our state that we did not write:
+        hist = [h for h in self.history if h["user"] != user][sstate:]
+        for e in hist:
             if (e['operation'] == "insert"):
                 # We gotta account for stuff that was inserted before our
                 # latest characters
@@ -172,7 +175,10 @@ class Document:
         # First, reach back in time and rebase our delete on top of any
         # other operations that took place without the client knowing about
         # them.
-        for e in self.history[sstate:]:
+        # For every operation in our history
+        # after our state that we did not write:
+        hist = [h for h in self.history if h["user"] != user][sstate:]
+        for e in hist:
             if (e['operation'] == "insert"):
                 if (e['pos'] <= begin):
                     # They inserted stuff before our delete. We should fix
