@@ -25,6 +25,9 @@ class Document:
         self.author = author
         self.content = ""
         self.subscribed_users = []
+        self.cstates = {}
+        # Dictionary object containing a mapping of usernames to how many
+        # messages we recieved from them
         self.history = []
         # History should be stored as a list of events like this:
         # [ {"operation": "insert" or "remove"
@@ -49,15 +52,16 @@ class Document:
         """
         return user in self.subscribed_users
 
-    def send_event(self, event):
+    def send_event(self, event, excepted=None):
         """
-        Sends an event to every subscribed user
+        Sends an event to every subscribed user except "Excepted"
         """
         print "[[" + self.name + "]] " + repr(event)
         # Send the document name along with it
         event["doc_name"] = self.name
         for u in self.subscribed_users:
-            u.add_event(event)
+            if u != excepted:
+                u.add_event(event)
 
     def subscribe_user(self, user):
         """
@@ -68,7 +72,8 @@ class Document:
             # Might be best to resync them instead.
             self.resync(user)
             return False
-
+        # Remember their state
+        self.cstates[user.name] = 0
         self.subscribed_users.append(user)
         self.send_event({"type": "subscribed_user", "user":user.get_state()})
 
@@ -79,6 +84,7 @@ class Document:
         if self.is_subscribed(user):
             self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
             self.subscribed_users.remove(user)
+            # Note that we do NOT clear their state.
 
     def get_state(self):
         """
@@ -166,7 +172,9 @@ class Document:
             "user": user.get_state(),
             "text": text,
             "pos": pos,
-        })
+        }, user)
+        # Finally, note that we got their message.
+        self.cstates[user.name] += 1
 
     def remove(self, user, begin, end, sstate):
         """
@@ -246,4 +254,6 @@ class Document:
             "user": user.get_state(),
             "begin": begin,
             "end": end
-        })
+        }, user)
+        # Finally, note that we got their message.
+        self.cstates[user.name] += 1
