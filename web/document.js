@@ -25,7 +25,7 @@ function gbDocument(docname) {
     this.name = docname;
     this.jqedit = $("<div class='gb-editor'></div>"); // Our jQuery text editor
     this.jqtab = $("<br />"); // The jQuery tab with the name in it and such
-    this.jqdoctab = $("<br />") // The jQuery doctab.
+    this.jqdoctab = $("<br />"); // The jQuery doctab.
     this.jqulist = $("<br />"); // The jQuery user list reference inside the doctab.
     this.users = [];
     this.content = "";
@@ -41,7 +41,7 @@ function gbDocument(docname) {
         // Resets the entire editor
         
         // Save this document
-        doc = this;
+        var doc = this;
         
         this.disable_editing();
 
@@ -54,7 +54,7 @@ function gbDocument(docname) {
         this.sstate = event.sstate;
         
         this.enable_editing();
-    }
+    };
 
     this.disable_editing = function() {
         this.jqedit.attr("contentEditable", false);
@@ -62,12 +62,12 @@ function gbDocument(docname) {
         this.timer = window.clearInterval(this.timer);
         //this.jqedit.unbind("keypress");
         //this.jqedit.unbind("keydown");
-    }
+    };
 
     this.enable_editing = function() {
         this.jqedit.attr("contentEditable", true);
         // Save the document object
-        doc = this;
+        var doc = this;
         
         // Fix enter
         this.jqedit.keydown(function(e) {
@@ -80,7 +80,7 @@ function gbDocument(docname) {
         this.timer = window.setInterval(function() {
             doc.scan_for_changes();
         },1000); // Edit this line to change the timeout
-    }
+    };
 
     this.scan_for_changes = function() {
         // Scans for changes
@@ -117,7 +117,7 @@ function gbDocument(docname) {
                     break;
             }
             // And add the length of our text to pos so we can see where we are
-        };
+        }
         //
         console.log(newtext);
         console.log(d);
@@ -126,7 +126,7 @@ function gbDocument(docname) {
         // to this.content
         this.content = newtext;
         console.timeEnd("Changes");
-    }
+    };
     
     this.get_selection = function() {
         // Returns the browser's internal selection object
@@ -138,22 +138,23 @@ function gbDocument(docname) {
             userSelection = document.selection;
         }
         return userSelection;
-    }
+    };
 
     this.get_range = function() {
         // Gets a range object from the selection.
         // Lovingly copied from TinyMCE
         var s = this.get_selection();
         return s.rangeCount > 0 ? s.getRangeAt(0) : (s.createRange ? s.createRange() : window.document.createRange());
-    }
+    };
 
     this.get_start_node = function() {
         // Returns the DOM element of the node the cursor is in.
         // Thanks to TinyMCE for this code! HUGS AND SWEETUMS.
         var range = this.get_range(), e;
         if ($.browser.msie) {
-				if (range.item)
+				if (range.item) {
 					return range.item(0);
+				}
 				range = range.duplicate();
 				range.collapse(1);
 				e = range.parentElement();
@@ -166,8 +167,8 @@ function gbDocument(docname) {
 			}
             var c = $(e).closest(".gb-editor");
             // TODO: What if we're not inside a chunk?
-            return c
-    }
+            return c;
+    };
 
     this.get_start_offset = function () {
         // Get the number of characters before the start of the selection.
@@ -176,15 +177,15 @@ function gbDocument(docname) {
         if ($.browser.msie) {
             // IE support
             // Text selection
-            c = -0xFFFFFF; // ooooh, magic
-            tr = document.body.createTextRange(); // New blank range
+            var c = -0xFFFFFF; // ooooh, magic
+            var tr = document.body.createTextRange(); // New blank range
             
-            begin = range.duplicate(); // Copy our old range (used for finding start node)
+            var begin = range.duplicate(); // Copy our old range (used for finding start node)
             begin.collapse(1); // Collapse our copy to just a cursor
 
             tr.moveToElementText(begin.parentElement()); // Makes our range encompass the element in the beginning
             tr.collapse(); // Collapse our fake range to the left of the cursor
-            bp = Math.abs(tr.move('character', c)); // Moves our stinkin' cursor to the beginning of the page.
+            var bp = Math.abs(tr.move('character', c)); // Moves our stinkin' cursor to the beginning of the page.
             
             // Confused yet? Me too.
             // The idea is: if we know how many characters from the beginning of the page
@@ -195,13 +196,13 @@ function gbDocument(docname) {
             // So let's find that second value.
             tr = range.duplicate(); // Copy our old range (re-uses variables here)
             tr.collapse(); // Collapse it to just a cursor
-            sp = Math.abs(tr.move('character', c)); // Move this to the beginning of the document
+            var sp = Math.abs(tr.move('character', c)); // Move this to the beginning of the document
             return sp - bp; // And return our value.
         } else {
             // blindingly simple ;)
             return range.startOffset;
         }
-    }
+    };
     
     this.set_cursor_offset = function(node, offset) {
         // This function, given a node and an offset, sets the cursor to there.
@@ -232,7 +233,7 @@ function gbDocument(docname) {
             r.setStart(node, offset);
             r.setEnd(node, offset);
         }
-    }
+    };
     
     this.is_cursor = function() {
         // Returns true if we have just a cursor, false if it's a selection
@@ -242,8 +243,8 @@ function gbDocument(docname) {
 			if (!r || r.item) {
                 return false;
             }
-			return r.boundingWidth == 0 || r.collapsed;
-    }
+			return r.boundingWidth === 0 || r.collapsed;
+    };
     
     
     //////////////////////////////////////////
@@ -262,36 +263,36 @@ function gbDocument(docname) {
             this.users.push(u);
             pagehandler.drawNewUser(u, "user", this.jqulist);
         }
-    }
+    };
     this.parse_unsubscribed_user = function(leavingUser) {
         // This function removes users from the user list. It does not touch the
         // document.
 
         var numUsers = this.users.length;
         for (var i=0; i<numUsers; i++) {
-            u = this.users[i];
+            var u = this.users[i];
             if (u.name == leavingUser.name) {
                 numUsers--; // Decrease the number of users left to search
                 this.users.splice(i,1); // Remove this user
                 pagehandler.removeUser(leavingUser, this.jqulist); // Un-draw this user
             }
         }
-    }
+    };
     
     this.parse_resync_event = function(data) {
         // What happens when the server sends us a resync event?
         this.users = data.users; // Copy users
         pagehandler.drawUserList(this.users, "user", this.jqulist); // Draw ulist
         this.reset(data);
-    }
+    };
     
     this.parse_insert_event = function(event) {
         if (event.user.name != session.myname) {
             this.scan_for_changes();
             
-            curpos = this.get_start_offset();
-            oldtext = this.jqedit.text();
-            newtext = oldtext.slice(0, event.pos) + event.text + oldtext.slice(event.pos);
+            var curpos = this.get_start_offset();
+            var oldtext = this.jqedit.text();
+            var newtext = oldtext.slice(0, event.pos) + event.text + oldtext.slice(event.pos);
             this.content = newtext;
             this.jqedit.text(newtext);
             
@@ -303,14 +304,14 @@ function gbDocument(docname) {
         
         // Save state
         this.sstate++;
-    }
+    };
     
     this.parse_delete_event = function(event) {
         this.scan_for_changes();
         
-        curpos = this.get_start_offset();
-        oldtext = this.jqedit.text();
-        newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
+        var curpos = this.get_start_offset();
+        var oldtext = this.jqedit.text();
+        var newtext = oldtext.slice(0, event.begin) + oldtext.slice(event.end);
         this.content = newtext;
         this.jqedit.text(newtext);
         if (curpos >= event.end) {
@@ -319,10 +320,10 @@ function gbDocument(docname) {
         } else if (curpos >= event.begin) {
                 this.set_cursor_offset(this.jqedit, event.begin);
         } else {
-            this.set_cursor_offset(this.jqedit, curpos)
+            this.set_cursor_offset(this.jqedit, curpos);
         }
         this.sstate++;
-    }
+    };
     
     
     //////////////////////////////////////////
@@ -332,7 +333,7 @@ function gbDocument(docname) {
         this.disable_editing();
         // Asks the server to resync us.
         $.get("resync_doc", {"doc_name":this.name});
-    }
+    };
     
     this.send_del = function(begin, end) {
         $.get("remove", {
@@ -341,9 +342,9 @@ function gbDocument(docname) {
             "end": end,
             "ss": this.sstate,
             "cs": this.cstate
-        })
-        this.cstate++
-    }
+        });
+        this.cstate += 1;
+    };
     
     this.send_ins = function(offset, text) {
         $.get("insert", {
@@ -352,15 +353,15 @@ function gbDocument(docname) {
             "t": text,
             "ss": this.sstate,
             "cs": this.cstate
-        })
-        this.cstate++;
-    }
+        });
+        this.cstate += 1;
+    };
     
     
     this.destroy = function() {
         // We've been destroyed! Best clean up our actions.
         this.timer = window.clearInterval(this.timer);
         pagehandler.removeDoc(this.name, $(".tablist"));
-    }
+    };
     
 }
