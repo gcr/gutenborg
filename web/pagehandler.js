@@ -20,7 +20,7 @@
 // This script handles UI, page layout, etc.
 
 
-pagehandler = new Object();
+pagehandler = {};
 
 pagehandler.init = function() {
     // Draws the page for the first time.
@@ -40,12 +40,12 @@ pagehandler.init = function() {
             // If we're not logged in, we want a login from.
             pagehandler.drawLoginForm();
         }
-}
+};
 
 pagehandler.drawLoginForm = function() {
     // Draws a new login form, assigns handlers.
     if (! session.logged_in) {
-        loginform = $("<div class='loginform'></div>").appendTo(".docarea");
+        var loginform = $("<div class='loginform'></div>").appendTo(".docarea");
         loginform.html("<b>You, sir are not logged in!</b> Please do so.<br />");
         loginform.append("<form id='loginform'>"
             + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
@@ -53,12 +53,12 @@ pagehandler.drawLoginForm = function() {
             + "<tr><td colspan=2><input type='submit' value='Log in' /></td></tr></table>"
             + "</form>");
         // Assign a colorpicker
-        var c = $.farbtastic(".colorpicker")
-        c.linkTo("#ucolor")
+        var c = $.farbtastic(".colorpicker");
+        c.linkTo("#ucolor");
         // Now that we got our form, what do we do with it?
         $("form", loginform).submit(function (event) {
-            uname = $("#uname").val();
-            ucolor = $("#ucolor").val();
+            var uname = $("#uname").val();
+            var ucolor = $("#ucolor").val();
 
             if (uname != "" && ucolor.length == 7) {
                 // Login with our session object
@@ -70,7 +70,7 @@ pagehandler.drawLoginForm = function() {
             return false;
         });        
     }
-}
+};
 
 pagehandler.drawUserList = function(users, cssclass, ulist) {
     // This function empties a user list. It then fills up the list
@@ -80,7 +80,7 @@ pagehandler.drawUserList = function(users, cssclass, ulist) {
        var newitem = $("<li class='" + cssclass + "'></li>").text(u.name);
        $(newitem).appendTo(ulist);
     });
-}
+};
 
 pagehandler.drawAllDocs = function(docs, adlist) {
     // This function empties the document list. It then fills up the list
@@ -95,16 +95,16 @@ pagehandler.drawAllDocs = function(docs, adlist) {
        if (session.logged_in) {
            $(newitem).click(function() {
                session.subscribeToDoc(d);
-           })
+           });
        }
     });
-}
+};
 
 pagehandler.drawNewUser = function(user, cssclass, ulist) {
     // Draws a new user at the bottom of a list
     var newitem = $("<li class='"+cssclass+"'></li>").text(user.name);
     $(newitem).appendTo(ulist).hide().fadeIn("slow");
-}
+};
 
 pagehandler.removeUser = function(user, list) {
     // Removes a user from a user list.
@@ -113,7 +113,7 @@ pagehandler.removeUser = function(user, list) {
             $(this).fadeOut("slow", function(){$(this).remove();});
         }
     });
-}
+};
 
 pagehandler.drawNewDoc = function(doc, tlist) {
     // When we've been subscribed to a document, this function
@@ -138,8 +138,8 @@ pagehandler.drawNewDoc = function(doc, tlist) {
     // Close button - note that even though I'm adding it to newitem directly
     // (which should only have the document text in it), this does NOT break
     // $(newitem).text, so getting documents by name should still work.
-    closebutton = $("<img style='margin-right: 16px; vertical-align: middle;' src='img/gtk-close.png' alt='Close'>").prependTo(newitem).click(function() {
-        session.unsubscribeToDoc(doc.name)
+    var closebutton = $("<img style='margin-right: 16px; vertical-align: middle;' src='img/gtk-close.png' alt='Close'>").prependTo(newitem).click(function() {
+        session.unsubscribeToDoc(doc.name);
     });
 
     // Build a new editor
@@ -153,14 +153,14 @@ pagehandler.drawNewDoc = function(doc, tlist) {
     // Finally, set this to be our active tab.
     pagehandler.setActive(doc);
     
-}
+};
 
 pagehandler.removeDoc = function(dname, tlist) {
     // Given a document name, we'll un-draw that document and its userlist.
     $(session.subscribed_docs[dname].jqdoctab).fadeOut("slow", function(){$(this).remove();});
     $(session.subscribed_docs[dname].jqtab).fadeOut("slow", function(){$(this).remove();});
     $(session.subscribed_docs[dname].jqedit).remove();
-}
+};
 
 pagehandler.clearActive = function() {
     // This function hides all the tabs' user lists and sets them to inactive.
@@ -178,7 +178,7 @@ pagehandler.clearActive = function() {
         // Now, hide our document itself
         $(d.jqedit).hide();
     });
-}
+};
 
 pagehandler.setActive = function(d, tlist) {
     // This function sets the tab to active.
@@ -200,4 +200,4 @@ pagehandler.setActive = function(d, tlist) {
     
     // Finally, show our document itself
     $(d.jqedit).show();
-}
+};

@@ -19,7 +19,7 @@
 
 // This script handles things like logging in, waiting for messages, etc.
 
-session = new Object();
+session = {};
 
 session.init = function() {
     // Starts up the session. Should be done again
@@ -34,7 +34,7 @@ session.init = function() {
         pagehandler.init(); // Begin drawing the page
         session.waitForEvents();
     });
-}
+};
 
 session.getServerInfo = function(callback) {
     // Asks the server for information, stores it in the session object,
@@ -60,7 +60,7 @@ session.getServerInfo = function(callback) {
         // to do this.
         callback();
      });
-}
+};
 
 session.waitForEvents = function() {
     // Waits for events. Uses AJAX long polling.
@@ -73,7 +73,7 @@ session.waitForEvents = function() {
             session.waitForEvents();
         });
     }
-}
+};
 
 session.handleEvent = function(event) {
     // When we get an event, this function describes what to do with it.
@@ -136,14 +136,14 @@ session.handleEvent = function(event) {
         default:
             alert("TODO: Unknown Event! Please see console.");
     }
-}
+};
 
 session.login = function(name, color){
     // This method logs us in and then resets the session.
     $.get("login", {"name": name, "color": color}, function() {
         session.init();
     });
-}
+};
 
 session.subscribeToDoc = function(d) {
     // Sends a subscribe request ONLY if we're not part of a document.
@@ -152,11 +152,11 @@ session.subscribeToDoc = function(d) {
     if (session.subscribed_docs[d] == undefined) {
         $.get("subscribe_document", {"doc_name": d});
     }
-}
+};
 session.unsubscribeToDoc = function(dname) {
     // Sends an unsubscribe request to the server
     $.get("unsubscribe_document", {"doc_name": dname});
-}
+};
 
 session.new_user = function(u) {
     // Only add the user if there isn't one already.
@@ -168,7 +168,7 @@ session.new_user = function(u) {
         session.active_users.push(u);
         pagehandler.drawNewUser(u, "online", $(".userlist"));
     }
-}
+};
 
 session.disconnect_user = function(leavingUser) {
     // This function removes users from the active list and puts them on the
@@ -177,7 +177,7 @@ session.disconnect_user = function(leavingUser) {
     
     var numUsers = session.active_users.length;
     for (var i=0; i<numUsers; i++) {
-        u = session.active_users[i];
+        var u = session.active_users[i];
         if (u.name == leavingUser.name) {
             numUsers--; // Decrease the number of users left to search
             session.active_users.splice(i,1); // Remove this user
@@ -185,7 +185,7 @@ session.disconnect_user = function(leavingUser) {
             //session.dead_users.push(leavingUser); // Add this user to the dead list
         }
     }
-}
+};
 
 session.subscribed_user_myself = function(event) {
     // Without knowing it, we've been subscribed to a document. We'll create
@@ -195,4 +195,4 @@ session.subscribed_user_myself = function(event) {
     
     // Resync the document
     session.subscribed_docs[event.doc_name].send_resync();
-}
+};
