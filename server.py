@@ -93,15 +93,9 @@ class Root:
         response = {}
         response['name'] = self.gb.name
         response['tag'] = self.gb.tagline
-        response['active_users'] = []
-        response['dead_users'] = []
-        response['documents'] = []
-        for u in self.gb.active_users[:]:
-            response['active_users'].append(u.get_state())
-        for u in self.gb.dead_users[:]:
-            response['dead_users'].append(u.get_state())
-        for d in self.gb.documents[:]:
-            response['documents'].append(d.name)
+        response['active_users'] = [u.get_state() for u in self.gb.active_users]
+        response['dead_users'] = [u.get_state() for u in self.gb.dead_users]
+        response['documents'] = [d.name for d in self.gb.documents]
         
         # Are we logged in?
         if self.is_logged_in():
