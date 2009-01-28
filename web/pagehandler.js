@@ -180,7 +180,7 @@ pagehandler.removeDoc = function(dname, tlist) {
     $(session.subscribed_docs[dname].jqdoctab).fadeOut("slow", function(){$(this).remove();});
     $(session.subscribed_docs[dname].jqtab).fadeOut("slow", function(){$(this).remove();});
     $(session.subscribed_docs[dname].jqedit).remove();
-    $("docarea .h2").text("Welcome to " + session.name);
+    $(".docarea h2").text("Welcome to " + session.servername);
     document.title = session.servername; // Window title
 }
 
