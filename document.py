@@ -25,7 +25,6 @@ class Document:
         self.author = author
         self.content = ""
         self.subscribed_users = []
-        self.cstates = {}
         # Dictionary object containing a mapping of usernames to how many
         # messages we recieved from them
         self.history = []
@@ -72,8 +71,7 @@ class Document:
             # Might be best to resync them instead.
             self.resync(user)
             return False
-        # Remember their state
-        self.cstates[user.name] = 0
+        
         self.subscribed_users.append(user)
         self.send_event({"type": "subscribed_user", "user":user.get_state()})
 
@@ -173,8 +171,6 @@ class Document:
             "text": text,
             "pos": pos,
         }, user)
-        # Finally, note that we got their message.
-        self.cstates[user.name] += 1
 
     def remove(self, user, begin, end, sstate):
         """
@@ -255,5 +251,4 @@ class Document:
             "begin": begin,
             "end": end
         }, user)
-        # Finally, note that we got their message.
-        self.cstates[user.name] += 1
+        
