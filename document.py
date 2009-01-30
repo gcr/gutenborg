@@ -25,8 +25,6 @@ class Document:
         self.author = author
         self.content = ""
         self.subscribed_users = []
-        # Dictionary object containing a mapping of usernames to how many
-        # messages we recieved from them
         self.history = []
         # History should be stored as a list of events like this:
         # [ {"operation": "insert" or "remove"
@@ -82,7 +80,6 @@ class Document:
         if self.is_subscribed(user):
             self.send_event({"type": "unsubscribed_user", "user":user.get_state()})
             self.subscribed_users.remove(user)
-            # Note that we do NOT clear their state.
 
     def get_state(self):
         """
@@ -112,6 +109,10 @@ class Document:
             e['doc_name'] = self.name
             # Send what type of event this is
             e['type'] = "resync_doc"
+            # We also need to send the user's state because they need to know
+            # how many changes they've made. Seems like a decision to make
+            # here rather than in self.get_state.
+            e['cstate'] = len([h for h in self.history if h["user"] == user])
             # And away she goes!
             user.add_event(e)
 
@@ -132,6 +133,10 @@ class Document:
         # For every operation in our history
         # after our state that we did not write:
         hist = [h for h in self.history if h["user"] != user][sstate:]
+        # This is the number of changes we think they made.
+        # It's up to them to transform our event if we haven't gotten
+        # their changes yet.
+        our_cstate = len(self.history) - len(hist)
         for e in hist:
             if (e['operation'] == "insert"):
                 # We gotta account for stuff that was inserted before our
@@ -170,6 +175,7 @@ class Document:
             "user": user.get_state(),
             "text": text,
             "pos": pos,
+            "cstate": our_cstate
         }, user)
 
     def remove(self, user, begin, end, sstate):
@@ -182,6 +188,7 @@ class Document:
         # For every operation in our history
         # after our state that we did not write:
         hist = [h for h in self.history if h["user"] != user][sstate:]
+        our_cstate = len(self.history) - len(hist)
         for e in hist:
             if (e['operation'] == "insert"):
                 if (e['pos'] <= begin):
@@ -249,6 +256,7 @@ class Document:
             "type": "remove",
             "user": user.get_state(),
             "begin": begin,
-            "end": end
+            "end": end,
+            "cstate": our_cstate
         }, user)
         
