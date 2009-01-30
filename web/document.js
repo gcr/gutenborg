@@ -84,7 +84,7 @@ function gbDocument(docname) {
 
     this.scan_for_changes = function() {
         // Scans for changes
-        console.time("Changes");
+        //console.time("Changes");
         
         // First, define some constants
         var DIFF_DELETE = -1;
@@ -119,13 +119,13 @@ function gbDocument(docname) {
             // And add the length of our text to pos so we can see where we are
         }
         //
-        console.log(newtext);
-        console.log(d);
+        //console.log(newtext);
+        //console.log(d);
         
         // Now saves the latest version that we know about back
         // to this.content
         this.content = newtext;
-        console.timeEnd("Changes");
+        //console.timeEnd("Changes");
     };
     
     this.get_selection = function() {
