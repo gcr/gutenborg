@@ -30,7 +30,7 @@ function gbDocument(docname) {
     this.users = [];
     this.content = "";
     this.sstate = 0;
-    this.cstate = 0;
+    this.shistory = []; // The list of server history
     this.dmp = new diff_match_patch();
     this.timer = 0;
     
@@ -52,6 +52,13 @@ function gbDocument(docname) {
         this.content = event.content;
         
         this.sstate = event.sstate;
+        
+        // Fill up our history with an empty list
+        this.history = [];
+        if (event.cstate < 0) {
+            this.history[event.cstate - 1] = undefined;
+            // Little trick. ^_^
+        }
         
         this.enable_editing();
     };
@@ -336,6 +343,13 @@ function gbDocument(docname) {
     };
     
     this.send_del = function(begin, end) {
+        // Add to our history
+        this.history.push({
+            op: "remove",
+            begin: begin,
+            end: end
+        });
+        // And notify the server
         $.get("remove", {
             "doc_name": this.name,
             "begin": begin,
@@ -343,10 +357,15 @@ function gbDocument(docname) {
             "ss": this.sstate,
             "cs": this.cstate
         });
-        this.cstate += 1;
     };
     
     this.send_ins = function(offset, text) {
+        // Add to our history
+        this.history.push({
+            op: "insert",
+            pos: pos,
+            t: text
+        });
         $.get("insert", {
             "doc_name": this.name,
             "pos": offset,
@@ -354,7 +373,6 @@ function gbDocument(docname) {
             "ss": this.sstate,
             "cs": this.cstate
         });
-        this.cstate += 1;
     };
     
     
