@@ -20,13 +20,14 @@ h2 {
 /* Our wonderful login form */
 .loginform {
     background-color: #73d216;
-    color: #000;
+    color: #fff;
     border: solid 1px #4e9a06;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 3em;
+    margin-top: 1em;
     width: 50%;
     padding: 12px;
+    -moz-border-radius: 8px;
 }
 .loginform h3 {
     /* The header inside our login form */
@@ -85,6 +86,7 @@ most of the time. */
     background-color: #8ae234;
     background-image: url('img/editor-background.png');
     background-repeat: no-repeat;
+    border: solid 1px #4e9a06;
     color: #fff;
     position: absolute;
     left: 15em;
@@ -92,6 +94,7 @@ most of the time. */
     right: 1em;
     bottom: 1em;
     top: 5em;
+    -moz-border-radius: 8px;
 }
 /* Our lovely editor */
 .gb-editor {
@@ -104,7 +107,7 @@ most of the time. */
     right: 1em;
     background-color: #fff;
     color: #000;
-    border: solid 1px #888;
+    border: solid 1px #4e9a06;
     overflow: scroll;
     white-space: pre; /* Doesn't ignore whitespace */
 }
@@ -124,4 +127,16 @@ most of the time. */
 .alldocs li {
     list-style-image: url('img/gnome-mime-text.png');
     font-weight: bold;
+}
+
+/* Input widgets */
+input.text_field {
+  border: 1px solid #555753;
+  background-color: #eee;
+  -moz-border-radius: 8px;
+}
+input.button {
+  border: 1px solid #555753;
+  background-color: #eee;
+  -moz-border-radius: 8px;
 }

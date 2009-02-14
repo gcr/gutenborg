@@ -32,13 +32,10 @@ pagehandler.init = function() {
     //pagehandler.drawUserList(session.active_users,"online", $(".userlist"));
     pagehandler.drawAllDocs(session.document_list, $(".alldocs"));
     
-    // This code was originally in session.init(). I decided to
-    // move it here because even though it involves the choice of whether
-    // a user is logged in, it seems more like a GUI issue.
-    if (session.logged_in) {
-            //pagehandler.drawMessageSubmitBox();
-            pagehandler.drawDocAreaHeaders();
-        } else {
+    
+    pagehandler.drawDocAreaHeaders();
+    
+    if (!session.logged_in) {
             // If we're not logged in, we want a login from.
             pagehandler.drawLoginForm();
         }
@@ -48,25 +45,28 @@ pagehandler.drawLoginForm = function() {
     // Draws a new login form, assigns handlers.
     // First, a little color packing function from farbtastic
     // that packs colors.
-    pack = function (rgb) {
-        var r = Math.round(rgb[0] * 255);
-        var g = Math.round(rgb[1] * 255);
-        var b = Math.round(rgb[2] * 255);
-        return '#' + (r < 16 ? '0' : '') + r.toString(16) +
-               (g < 16 ? '0' : '') + g.toString(16) +
-            (b < 16 ? '0' : '') + b.toString(16);
-    }
-    
-    // Get a random color
-    var color = pack([Math.random(), Math.random(), Math.random()]);
     
     if (! session.logged_in) {
+            pack = function (rgb) {
+            var r = Math.round(rgb[0] * 255);
+            var g = Math.round(rgb[1] * 255);
+            var b = Math.round(rgb[2] * 255);
+            return '#' + (r < 16 ? '0' : '') + r.toString(16) +
+                (g < 16 ? '0' : '') + g.toString(16) +
+                (b < 16 ? '0' : '') + b.toString(16);
+        }
+        
+        // Get a random color
+        var color = pack([Math.random(), Math.random(), Math.random()]);
+        
+        // Set our headers
+        $(".docarea h2").html("<strong>Hello, newcomer!</strong> Who are you?");
+        // Make a login form
         loginform = $("<div class='loginform'></div>").appendTo(".docarea");
-        loginform.html("<h3>Who are you?</h3>");
         loginform.append("<form id='loginform'>"
-            + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
-            + "<tr><td>Color:</td><td><div class='colorpicker' /><input type='text' id='ucolor' value='" + color + "'/></td></tr>"
-            + "<tr><td colspan=2><input type='submit' value='Log in' /></td></tr></table>"
+            + "<table><tr><td>User name:</td><td><input id='uname' type='text' class='text_field'/></td></tr>"
+            + "<tr><td>Color:</td><td><div class='colorpicker' /><input type='text' id='ucolor' value='" + color + "' class='text_field'/></td></tr>"
+            + "<tr><td colspan=2><input type='submit' value='Log in →' class='button' /></td></tr></table>"
             + "</form>");
         // Assign a colorpicker
         var c = $.farbtastic(".colorpicker")
@@ -89,8 +89,8 @@ pagehandler.drawLoginForm = function() {
 }
 
 pagehandler.drawDocAreaHeaders = function() {
-    // This function adds the document headers to the docarea.
-    $("<h2 />").appendTo(".docarea").text("Welcome to " + session.servername);
+    // This function adds the document headers to the docarea
+    $(".docarea h2").text("Welcome to " + session.servername);
 }
 pagehandler.drawUserList = function(users, cssclass, ulist) {
     // This function empties a user list. It then fills up the list
