@@ -62,7 +62,7 @@ pagehandler.drawLoginForm = function() {
     
     if (! session.logged_in) {
         loginform = $("<div class='loginform'></div>").appendTo(".docarea");
-        loginform.html("<b>You, sir are not logged in!</b> Please do so.<br />");
+        loginform.html("<h3>Who are you?</h3>");
         loginform.append("<form id='loginform'>"
             + "<table><tr><td>User name:</td><td><input id='uname' type='text' /></td></tr>"
             + "<tr><td>Color:</td><td><div class='colorpicker' /><input type='text' id='ucolor' value='" + color + "'/></td></tr>"

@@ -4,8 +4,8 @@
 */
 body {
     font-family: sans-serif;
-	/*background-image: url('img/bg.jpg');*/
-	background-color: #888a85;
+    /*background-image: url('img/bg.jpg');*/
+    background-color: #888a85;
 }
 h1 {
     text-align: center;
@@ -13,19 +13,24 @@ h1 {
     margin-bottom: 0px;
 }
 h2 {
-	text-align: center;
-	margin-top: 0px;
+    text-align: center;
+    margin-top: 0px;
 }
 
 /* Our wonderful login form */
 .loginform {
-	background-color: #eee;
-	color: #000;
-	border: solid 1px #4e9a06;
+    background-color: #73d216;
+    color: #000;
+    border: solid 1px #4e9a06;
     margin-left: auto;
     margin-right: auto;
     margin-top: 3em;
     width: 50%;
+    padding: 12px;
+}
+.loginform h3 {
+    /* The header inside our login form */
+    color: #fff;
 }
 
 /* The list of documents */
@@ -35,24 +40,24 @@ h2 {
     top: 5em;
 }
 .tablist h3 {
-	text-align: right;
+    text-align: right;
     margin-top: 0px;
     margin-bottom: 1em;
 }
 .tablist .opentab {
     background-color: #73d216;
-	background-image: url('img/opentab-gradient.png');
-	background-position: bottom;
+    background-image: url('img/opentab-gradient.png');
+    background-position: bottom;
     padding-left: 40px;
 }
 .tablist .opentab:hover {
     background-color: #74f574;
-	/* TODO: Need some other indicator */
+    /* TODO: Need some other indicator */
 }
 .tablist .activetab {
     background-color: #74f574;
-	background-image: url('img/activetab-gradient.png');
-	background-position: bottom;
+    background-image: url('img/activetab-gradient.png');
+    background-position: bottom;
     font-weight: bold;
 }
 
@@ -78,7 +83,9 @@ most of the time. */
 /* Our document area */
 .docarea {
     background-color: #8ae234;
-	color: #fff;
+    background-image: url('img/editor-background.png');
+    background-repeat: no-repeat;
+    color: #fff;
     position: absolute;
     left: 15em;
     /*margin-left: 1em;*/
@@ -88,17 +95,17 @@ most of the time. */
 }
 /* Our lovely editor */
 .gb-editor {
-	position: fixed;
-	/* I'd use position: absolute, but it makes firefox give it resize
-	  handles, which isn't what I want. */
-	top: 7em;
-	bottom: 1em;
-	left: 15em;
-	right: 1em;
+    position: fixed;
+    /* I'd use position: absolute, but it makes firefox give it resize
+      handles, which isn't what I want. */
+    top: 7em;
+    bottom: 1em;
+    left: 15em;
+    right: 1em;
     background-color: #fff;
-	color: #000;
-	border: solid 1px #888;
-	overflow: scroll;
+    color: #000;
+    border: solid 1px #888;
+    overflow: scroll;
     white-space: pre; /* Doesn't ignore whitespace */
 }
 /* The box that contains ALL documents */
