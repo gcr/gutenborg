@@ -135,8 +135,14 @@ input.text_field {
   background-color: #eee;
   -moz-border-radius: 8px;
 }
-input.button {
-  border: 1px solid #555753;
+input.submitbutton {
+  color: #000;
   background-color: #eee;
+  /*background-image: url('img/button-background.png');
+  background-repeat: no-repeat;
+  background-position: left;
+  padding-left: 16px;*/
+  border: solid 1px #4e9a06;
   -moz-border-radius: 8px;
+  height: 64px;
 }

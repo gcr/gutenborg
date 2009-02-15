@@ -63,11 +63,19 @@ pagehandler.drawLoginForm = function() {
         $(".docarea h2").html("<strong>Hello, newcomer!</strong> Who are you?");
         // Make a login form
         loginform = $("<div class='loginform'></div>").appendTo(".docarea");
-        loginform.append("<form id='loginform'>"
-            + "<table><tr><td>User name:</td><td><input id='uname' type='text' class='text_field'/></td></tr>"
-            + "<tr><td>Color:</td><td><div class='colorpicker' /><input type='text' id='ucolor' value='" + color + "' class='text_field'/></td></tr>"
-            + "<tr><td colspan=2><input type='submit' value='Log in →' class='button' /></td></tr></table>"
-            + "</form>");
+        loginform.append("<form id='loginform'><table cellspacing=6>"
+            +"<tr>"
+            +  "<td>Name:</td>"
+            +  "<td><input id='uname' type='text' class='text_field'/></td>"
+            +  "<td rowspan=2><input type='submit' value='Log in →' class='submitbutton' /></td>"
+            + "</tr><tr>"
+            +  "<td valign='top'>Color:</td>"
+            +  "<td><input type='text' id='ucolor' value='" + color + "' class='text_field'/></td>"
+            + "</tr><tr>"
+            +      "<td /><td><div class='colorpicker' /></td>"
+            + "</tr>"
+            //+ "<tr><td /><td><input type='submit' value='Log in →' class='button' /></td></tr></table>"
+            +"</form></table");
         // Assign a colorpicker
         var c = $.farbtastic(".colorpicker")
         c.linkTo("#ucolor")
