@@ -81,6 +81,7 @@ function gbDocument(docname) {
             if (e.which == 13) {
                 // TODO: Ignore enter, but we should change it so that
                 // it inserts a newline instead
+                // TODO: Also get it to work with IE and Chrome
                 e.preventDefault();
             }});
         //this.jqedit.keyup(function() {doc.scan_for_changes()});
