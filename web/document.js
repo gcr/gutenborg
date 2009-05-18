@@ -364,7 +364,7 @@ function gbDocument(docname) {
         // Add to our history
         this.history.push({
             op: "insert",
-            pos: pos,
+            pos: offset,
             t: text
         });
         $.get("insert", {
