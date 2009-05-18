@@ -100,7 +100,7 @@ class Root:
         # Are we logged in?
         if self.is_logged_in():
             response['logged_in_username'] = cherrypy.session['user'].name
-        return json.write(response)
+        return json.dumps(response)
     info.exposed = True
     
     def wait(self, **args):

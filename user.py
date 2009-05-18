@@ -77,7 +77,7 @@ class User:
             # we clear it anyway.
             self.eventAdded.clear()
             response.extend(self.history[last:])
-        return json.write(response)
+        return json.dumps(response)
         
     
     def add_event(self, event):
